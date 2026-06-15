@@ -31,5 +31,5 @@ compile_commands.json
 # clangd
 .cache/
 
-# Claude Code config — local only, not part of the project
+# Claude Code config 
 .claude/

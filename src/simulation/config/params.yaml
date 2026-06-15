@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    long_time_constant: 0.5
+    simulation_frequency: 50.0
