@@ -10,7 +10,7 @@ namespace domain
 struct VelocityControlConfig
 {
   double max_velocity_mps{100.0};
-  double min_velocity_mps{0.0};
+  double min_velocity_mps{-100.0};
 };
 
 /// @brief Generic velocity controller

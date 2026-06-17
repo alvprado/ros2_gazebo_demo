@@ -14,13 +14,14 @@ find_package(nav_msgs REQUIRED)
 # Domain library: pure C++, no ROS dependencies.
 add_library(${PROJECT_NAME}_domain
   src/domain/pid_controller.cpp
+  src/domain/velocity_profile.cpp
 )
 target_include_directories(${PROJECT_NAME}_domain PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 target_compile_features(${PROJECT_NAME}_domain PUBLIC cxx_std_17)
 
-# Core library: ROS 2 infrastructure, depends on the domain library.
+# Core library: ROS 2 infrastructure for the velocity controller.
 add_library(${PROJECT_NAME}_core
   src/infrastructure/velocity_controller_node.cpp
 )
@@ -31,20 +32,38 @@ target_compile_features(${PROJECT_NAME}_core PUBLIC cxx_std_17)
 target_link_libraries(${PROJECT_NAME}_core PUBLIC ${PROJECT_NAME}_domain)
 ament_target_dependencies(${PROJECT_NAME}_core PUBLIC rclcpp geometry_msgs nav_msgs)
 
-# Executable
+# Target velocity library: ROS 2 infrastructure for the target velocity node.
+add_library(${PROJECT_NAME}_target_velocity_core
+  src/infrastructure/target_velocity_node.cpp
+)
+target_include_directories(${PROJECT_NAME}_target_velocity_core PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+target_compile_features(${PROJECT_NAME}_target_velocity_core PUBLIC cxx_std_17)
+target_link_libraries(${PROJECT_NAME}_target_velocity_core PUBLIC ${PROJECT_NAME}_domain)
+ament_target_dependencies(${PROJECT_NAME}_target_velocity_core PUBLIC rclcpp geometry_msgs)
+
+# Executables
 add_executable(velocity_controller src/velocity_controller_main.cpp)
 target_compile_features(velocity_controller PUBLIC cxx_std_17)
 target_link_libraries(velocity_controller ${PROJECT_NAME}_core)
 
+add_executable(target_velocity src/target_velocity_main.cpp)
+target_compile_features(target_velocity PUBLIC cxx_std_17)
+target_link_libraries(target_velocity ${PROJECT_NAME}_target_velocity_core)
+
 install(TARGETS
   ${PROJECT_NAME}_domain
   ${PROJECT_NAME}_core
+  ${PROJECT_NAME}_target_velocity_core
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
 
-install(TARGETS velocity_controller
+install(TARGETS
+  velocity_controller
+  target_velocity
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY include/

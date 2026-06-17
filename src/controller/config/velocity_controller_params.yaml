@@ -1,8 +1,8 @@
 /**:
   ros__parameters:
     kp: 1.0
-    ki: 0.1
+    ki: 0.5
     kd: 0.0
     max_velocity_mps: 100.0
-    min_velocity_mps: 0.0
-    control_frequency: 50.0
+    min_velocity_mps: -100.0
+    control_frequency: 20.0

@@ -3,8 +3,8 @@
 <package format="3">
   <name>simulation</name>
   <version>0.0.0</version>
-  <description>Custom differential-drive robot simulator</description>
-  <maintainer email="parallels@todo.todo">parallels</maintainer>
+  <description>Custom robot simulation</description>
+  <maintainer email="alvarezprado96@gmail.com">Andres</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

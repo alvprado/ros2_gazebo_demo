@@ -40,7 +40,7 @@ SimulatorNode::SimulatorNode()
     std::chrono::duration_cast<std::chrono::nanoseconds>(simulation_period),
     std::bind(&SimulatorNode::simulationTimerCallback, this));
 
-  RCLCPP_INFO(get_logger(), "simulation node started");
+  RCLCPP_INFO(get_logger(), "Simulation node started");
 }
 
 void SimulatorNode::cmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg)

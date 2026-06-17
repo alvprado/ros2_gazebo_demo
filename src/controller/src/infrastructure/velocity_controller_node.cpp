@@ -15,7 +15,7 @@ VelocityControllerNode::VelocityControllerNode()
   declare_parameter<double>("kp", 1.0);
   declare_parameter<double>("ki", 0.0);
   declare_parameter<double>("kd", 0.0);
-  declare_parameter<double>("min_velocity_mps", 0.0);
+  declare_parameter<double>("min_velocity_mps", -100.0);
   declare_parameter<double>("max_velocity_mps", 100.0);
   declare_parameter<double>("control_frequency", 50.0);
 
@@ -32,7 +32,7 @@ VelocityControllerNode::VelocityControllerNode()
     rclcpp::QoS(10).reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE);
 
   target_velocity_sub_ = create_subscription<geometry_msgs::msg::Twist>(
-    "target_vel", command_qos,
+    "target_velocity", command_qos,
     std::bind(&VelocityControllerNode::targetVelocityCallback, this, std::placeholders::_1));
 
   odometry_sub_ = create_subscription<nav_msgs::msg::Odometry>(
@@ -48,7 +48,7 @@ VelocityControllerNode::VelocityControllerNode()
     std::chrono::duration_cast<std::chrono::nanoseconds>(control_period),
     std::bind(&VelocityControllerNode::controlCallback, this));
 
-  RCLCPP_INFO(get_logger(), "velocity_controller node started");
+  RCLCPP_INFO(get_logger(), "Velocity controller node started");
 }
 
 void VelocityControllerNode::targetVelocityCallback(const geometry_msgs::msg::Twist::SharedPtr msg)

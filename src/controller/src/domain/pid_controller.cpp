@@ -16,7 +16,12 @@ double PidController::step(double setpoint, double current, double dt)
 
   integral_ += error * dt;
 
-  const double derivative = (error - previous_error_) / dt;
+  constexpr double tol{1E-4};
+  double derivative{0.0};
+  if(dt > tol)
+  {
+      derivative = (error - previous_error_) / dt;
+  }
 
   previous_error_ = error;
 
