@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<sdf version="1.8">
+  <world name="demo_world">
+
+    <!--
+      System plugins that every gz-sim world needs:
+      - Physics:          runs the physics engine (DART by default)
+      - UserCommands:     lets the GUI and external tools move/delete entities
+      - SceneBroadcaster: streams the scene state to the GUI renderer
+    -->
+    <plugin filename="gz-sim-physics-system"
+            name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system"
+            name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system"
+            name="gz::sim::systems::SceneBroadcaster"/>
+
+    <!--
+      Use FCL (Flexible Collision Library) instead of ODE for collision
+      detection.  ODE's hash-space broadphase overflows its integer AABB
+      bounds when it encounters large or plane-shaped collision geometry,
+      crashing with "aabbBound >= dMinIntExact".  FCL has no such limit.
+    -->
+    <physics name="default_physics" default="true" type="dart">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <dart>
+        <collision_detector>fcl</collision_detector>
+      </dart>
+    </physics>
+
+    <!-- Directional sunlight -->
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <!--
+      Static ground plane.  static=true means Gazebo treats it as having
+      infinite mass (it won't move when the robot drives on it).
+    -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <!--
+          Box instead of plane for collision: ODE's AABB hash-space cannot
+          handle infinite-extent geometries.  The box top surface sits exactly
+          at z=0 (pose z=-0.05, half-height=0.05).  The visual stays as a
+          plane because rendering handles infinite extents fine.
+        -->
+        <collision name="collision">
+          <pose>0 0 -0.05 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>200 200 0.1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>200 200</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- The robot is NOT embedded here — it is spawned at launch time
+         via ros_gz_sim create, so the URDF stays the single source of truth. -->
+
+  </world>
+</sdf>

@@ -1,0 +1,67 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+  - Class: rviz_common/Views
+    Name: Views
+Visualization Manager:
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Name: Grid
+      Enabled: true
+      Cell Size: 0.5
+      Color: 160; 160; 164
+      Plane Cell Count: 20
+      Reference Frame: <Fixed Frame>
+
+    - Class: rviz_default_plugins/RobotModel
+      Name: RobotModel
+      Enabled: true
+      Description Topic:
+        Value: /robot_description
+        Reliability Policy: Reliable
+        Durability Policy: Transient Local
+
+    - Class: rviz_default_plugins/TF
+      Name: TF
+      Enabled: true
+      Show Axes: true
+      Show Arrows: true
+      Show Names: true
+      Frame Timeout: 15
+
+    - Class: rviz_default_plugins/Odometry
+      Name: Odometry
+      Enabled: true
+      Topic:
+        Value: /odom
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+      Keep: 100
+      Shape:
+        Alpha: 1.0
+        Shaft Length: 0.15
+        Shaft Radius: 0.02
+        Head Length: 0.05
+        Head Radius: 0.04
+
+  Global Options:
+    Background Color: 48; 48; 48
+    Fixed Frame: odom
+    Frame Rate: 30
+
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Name: Current View
+      Distance: 4.0
+      Pitch: 0.6
+      Yaw: 0.8
+      Target Frame: base_link
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: 0
+
+Window Geometry:
+  Width: 1200
+  Height: 900

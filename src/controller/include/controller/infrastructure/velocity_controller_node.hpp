@@ -9,6 +9,7 @@
 
 #include "controller/domain/velocity_control.hpp"
 #include "controller/domain/pid_controller.hpp"
+#include "controller/domain/rate_limiter.hpp"
 
 namespace controller
 {
@@ -32,6 +33,7 @@ private:
   rclcpp::TimerBase::SharedPtr control_timer_;
 
   std::optional<domain::VelocityControl<domain::PidController>> velocity_control_;
+  std::optional<domain::RateLimiter> rate_limiter_;
 
   geometry_msgs::msg::Twist target_velocity_;
   nav_msgs::msg::Odometry odometry_;

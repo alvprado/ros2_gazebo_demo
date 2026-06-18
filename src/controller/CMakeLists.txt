@@ -14,6 +14,7 @@ find_package(nav_msgs REQUIRED)
 # Domain library: pure C++, no ROS dependencies.
 add_library(${PROJECT_NAME}_domain
   src/domain/pid_controller.cpp
+  src/domain/rate_limiter.cpp
   src/domain/velocity_profile.cpp
 )
 target_include_directories(${PROJECT_NAME}_domain PUBLIC

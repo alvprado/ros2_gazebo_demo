@@ -42,9 +42,9 @@ ament_target_dependencies(${PROJECT_NAME}_core PUBLIC
 )
 
 # Executable
-add_executable(robot_simulation src/simulator_node_main.cpp)
-target_compile_features(robot_simulation PUBLIC cxx_std_17)
-target_link_libraries(robot_simulation ${PROJECT_NAME}_core)
+add_executable(simple_simulation src/simulator_node_main.cpp)
+target_compile_features(simple_simulation PUBLIC cxx_std_17)
+target_link_libraries(simple_simulation ${PROJECT_NAME}_core)
 
 install(TARGETS
   ${PROJECT_NAME}_domain
@@ -54,7 +54,7 @@ install(TARGETS
   RUNTIME DESTINATION bin
 )
 
-install(TARGETS robot_simulation
+install(TARGETS simple_simulation
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY include/

@@ -29,10 +29,10 @@ def generate_launch_description():
         output='screen',
     )
 
-    robot_simulation = Node(
+    simple_simulation = Node(
         package='simulation',
-        executable='robot_simulation',
-        name='robot_simulation',
+        executable='simple_simulation',
+        name='simple_simulation',
         parameters=[simulation_params],
         output='screen',
     )
@@ -40,5 +40,5 @@ def generate_launch_description():
     return LaunchDescription([
         target_velocity,
         velocity_controller,
-        robot_simulation,
+        simple_simulation,
     ])
