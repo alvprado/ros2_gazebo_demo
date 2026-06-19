@@ -32,8 +32,7 @@ TargetVelocityNode::TargetVelocityNode()
     RCLCPP_ERROR(get_logger(),
       "Parameter 'target_velocities_mps' is empty — using fallback values");
     velocity_steps = {{kfallback_velocity_mps, kfallback_duration_s}};
-  } 
-  else if (target_velocities_mps.size() != durations_s.size()) {
+  } else if (target_velocities_mps.size() != durations_s.size()) {
     RCLCPP_ERROR(get_logger(),
       "'target_velocities_mps' and 'durations_s' must have the same length — using fallback values");
     velocity_steps = {{kfallback_velocity_mps, kfallback_duration_s}};

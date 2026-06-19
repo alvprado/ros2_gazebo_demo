@@ -15,7 +15,7 @@ VelocityProfile::VelocityProfile(std::vector<VelocityStep> steps, bool loop)
   total_duration_s_ = std::transform_reduce(
     steps_.begin(), steps_.end(), 0.0,
     std::plus<double>{},
-    [](const VelocityStep & step) { return step.duration_s; });
+    [](const VelocityStep & step) {return step.duration_s;});
 }
 
 double VelocityProfile::step(double time_s)

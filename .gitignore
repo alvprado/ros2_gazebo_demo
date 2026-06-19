@@ -30,6 +30,7 @@ compile_commands.json
 
 # clangd
 .cache/
+.clang*
 
 # Claude Code config 
 .claude/

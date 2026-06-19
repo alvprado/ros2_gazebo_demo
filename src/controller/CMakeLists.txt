@@ -13,14 +13,13 @@ find_package(nav_msgs REQUIRED)
 
 # Domain library: pure C++, no ROS dependencies.
 add_library(${PROJECT_NAME}_domain
-  src/domain/pid_controller.cpp
-  src/domain/rate_limiter.cpp
+  src/domain/low_pass_filter.cpp
   src/domain/velocity_profile.cpp
 )
 target_include_directories(${PROJECT_NAME}_domain PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-target_compile_features(${PROJECT_NAME}_domain PUBLIC cxx_std_17)
+target_compile_features(${PROJECT_NAME}_domain PUBLIC cxx_std_23)
 
 # Core library: ROS 2 infrastructure for the velocity controller.
 add_library(${PROJECT_NAME}_core
@@ -29,7 +28,7 @@ add_library(${PROJECT_NAME}_core
 target_include_directories(${PROJECT_NAME}_core PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-target_compile_features(${PROJECT_NAME}_core PUBLIC cxx_std_17)
+target_compile_features(${PROJECT_NAME}_core PUBLIC cxx_std_23)
 target_link_libraries(${PROJECT_NAME}_core PUBLIC ${PROJECT_NAME}_domain)
 ament_target_dependencies(${PROJECT_NAME}_core PUBLIC rclcpp geometry_msgs nav_msgs)
 
@@ -40,17 +39,17 @@ add_library(${PROJECT_NAME}_target_velocity_core
 target_include_directories(${PROJECT_NAME}_target_velocity_core PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-target_compile_features(${PROJECT_NAME}_target_velocity_core PUBLIC cxx_std_17)
+target_compile_features(${PROJECT_NAME}_target_velocity_core PUBLIC cxx_std_23)
 target_link_libraries(${PROJECT_NAME}_target_velocity_core PUBLIC ${PROJECT_NAME}_domain)
 ament_target_dependencies(${PROJECT_NAME}_target_velocity_core PUBLIC rclcpp geometry_msgs)
 
 # Executables
 add_executable(velocity_controller src/velocity_controller_main.cpp)
-target_compile_features(velocity_controller PUBLIC cxx_std_17)
+target_compile_features(velocity_controller PUBLIC cxx_std_23)
 target_link_libraries(velocity_controller ${PROJECT_NAME}_core)
 
 add_executable(target_velocity src/target_velocity_main.cpp)
-target_compile_features(target_velocity PUBLIC cxx_std_17)
+target_compile_features(target_velocity PUBLIC cxx_std_23)
 target_link_libraries(target_velocity ${PROJECT_NAME}_target_velocity_core)
 
 install(TARGETS
@@ -75,18 +74,14 @@ install(DIRECTORY config
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
   set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
   ament_add_gtest(test_pid_controller test/test_pid_controller.cpp)
   target_link_libraries(test_pid_controller ${PROJECT_NAME}_domain)
+  target_compile_features(test_pid_controller PUBLIC cxx_std_23)
 endif()
 
 ament_package()

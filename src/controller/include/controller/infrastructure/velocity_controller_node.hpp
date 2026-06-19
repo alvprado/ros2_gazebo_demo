@@ -1,15 +1,13 @@
 #ifndef CONTROLLER_INFRASTRUCTURE_VELOCITY_CONTROLLER_NODE_HPP
 #define CONTROLLER_INFRASTRUCTURE_VELOCITY_CONTROLLER_NODE_HPP
 
-#include <optional>
-
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <optional>
 #include <rclcpp/rclcpp.hpp>
 
-#include "controller/domain/velocity_control.hpp"
+#include "controller/domain/low_pass_filter.hpp"
 #include "controller/domain/pid_controller.hpp"
-#include "controller/domain/rate_limiter.hpp"
 
 namespace controller
 {
@@ -32,13 +30,13 @@ private:
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr velocity_command_pub_;
   rclcpp::TimerBase::SharedPtr control_timer_;
 
-  std::optional<domain::VelocityControl<domain::PidController>> velocity_control_;
-  std::optional<domain::RateLimiter> rate_limiter_;
+  using PidControllerType = domain::PidController<domain::LowPassFilter, domain::LowPassFilter>;
+  std::optional<PidControllerType> pid_controller_;
 
   geometry_msgs::msg::Twist target_velocity_;
   nav_msgs::msg::Odometry odometry_;
 
-  double dt_{0.0};
+  double dt_s_{0.0};
 };
 
 }  // namespace infrastructure
