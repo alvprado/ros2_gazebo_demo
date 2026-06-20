@@ -21,11 +21,20 @@ struct Pose2D
   double theta_rad{0.0};
 };
 
+/// @brief Wheel rotation angles
+/// @details Angles should be wrapped between -pi and pi
+struct WheelAngles
+{
+  double left_rad{0.0};
+  double right_rad{0.0};
+};
+
 /// @brief State of the robot
 struct State
 {
   Pose2D pose;
   Velocity2D velocity;
+  WheelAngles wheel_angles;
 };
 
 }  // namespace domain

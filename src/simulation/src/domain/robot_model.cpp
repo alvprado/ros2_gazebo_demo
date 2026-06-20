@@ -21,6 +21,10 @@ std::expected<State, SimulationErrorCodes> RobotModel::step(const Velocity2D& ve
   {
     return std::unexpected(SimulationErrorCodes::NonPositiveTimeConstant);
   }
+  if (config_.wheel_radius_m <= 0.0 || config_.wheel_separation_m <= 0.0)
+  {
+    return std::unexpected(SimulationErrorCodes::InvalidWheelConfig);
+  }
 
   State state{};
 
@@ -42,6 +46,19 @@ std::expected<State, SimulationErrorCodes> RobotModel::step(const Velocity2D& ve
                    state.velocity.linear_mps * std::cos(previous_state_.pose.theta_rad) * dt_s;
   state.pose.y_m = previous_state_.pose.y_m +
                    state.velocity.linear_mps * std::sin(previous_state_.pose.theta_rad) * dt_s;
+
+  // Integrate wheel angles using differential drive kinematics
+  const double left_vel_radps =
+    (state.velocity.linear_mps - state.velocity.angular_radps * config_.wheel_separation_m / 2.0) /
+    config_.wheel_radius_m;
+  const double right_vel_radps =
+    (state.velocity.linear_mps + state.velocity.angular_radps * config_.wheel_separation_m / 2.0) /
+    config_.wheel_radius_m;
+  // Update wheel angles and wrap to (-pi, pi]
+  state.wheel_angles.left_rad =
+    std::remainder(previous_state_.wheel_angles.left_rad + left_vel_radps * dt_s, 2.0 * M_PI);
+  state.wheel_angles.right_rad =
+    std::remainder(previous_state_.wheel_angles.right_rad + right_vel_radps * dt_s, 2.0 * M_PI);
 
   previous_state_ = state;
   return state;

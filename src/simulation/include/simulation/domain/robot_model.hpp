@@ -15,10 +15,14 @@ namespace domain
 /// @brief Config for the robot model
 struct RobotModelConfig
 {
-  /// Longitudinal velocity first-order lag time constant [s]
+  /// Longitudinal velocity first-order lag time constant in s
   double long_velocity_time_constant_s{0.1};
-  /// Angular velocity first-order lag time constant [s]
+  /// Angular velocity first-order lag time constant in s
   double angular_velocity_time_constant_s{0.1};
+  /// Wheel radius in m
+  double wheel_radius_m{0.05};
+  /// Distance between left and right wheel centres in m
+  double wheel_separation_m{0.30};
 };
 
 /// @brief Robot model error codes
@@ -26,6 +30,7 @@ enum class SimulationErrorCodes : std::uint8_t
 {
   NonPositiveTimeConstant = 0U,
   InvalidTimeStep = 1U,
+  InvalidWheelConfig = 2U,
 };
 
 /// @brief Map error codes to a string view
@@ -39,6 +44,8 @@ inline std::string_view toString(SimulationErrorCodes code)
       return "NonPositiveTimeConstant";
     case SimulationErrorCodes::InvalidTimeStep:
       return "InvalidTimeStep";
+    case SimulationErrorCodes::InvalidWheelConfig:
+      return "InvalidWheelConfig";
   }
   return "Unknown";
 }

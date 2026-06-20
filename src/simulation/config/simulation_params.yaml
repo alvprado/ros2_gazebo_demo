@@ -3,3 +3,5 @@
     long_velocity_time_constant_s: 0.5
     angular_velocity_time_constant_s: 0.1
     simulation_frequency: 20.0
+    wheel_radius_m: 0.05
+    wheel_separation_m: 0.30

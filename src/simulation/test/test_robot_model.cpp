@@ -109,3 +109,35 @@ TEST(RobotModelTest, NegativeDtReturnsError)
   ASSERT_FALSE(result.has_value());
   EXPECT_EQ(result.error(), SimulationErrorCodes::InvalidTimeStep);
 }
+
+TEST(RobotModelTest, ForwardMotionSpinsWheelsSymmetrically)
+{
+  // v>0, ω=0 → both wheels spin equally forward
+  auto model = make_model();
+  const auto state = model.step(Velocity2D{1.0, 0.0}, 1.0);
+  ASSERT_TRUE(state.has_value());
+  EXPECT_NEAR(state.value().wheel_angles.left_rad, state.value().wheel_angles.right_rad, 1e-9);
+  EXPECT_GT(state.value().wheel_angles.left_rad, 0.0);
+}
+
+TEST(RobotModelTest, PureTurnSpinsWheelsOppositely)
+{
+  // v=0, ω>0 → left wheel backward, right wheel forward
+  auto model = make_model();
+  const auto state = model.step(Velocity2D{0.0, 1.0}, 1.0);
+  ASSERT_TRUE(state.has_value());
+  EXPECT_LT(state.value().wheel_angles.left_rad, 0.0);
+  EXPECT_GT(state.value().wheel_angles.right_rad, 0.0);
+}
+
+TEST(RobotModelTest, InvalidWheelConfigReturnsError)
+{
+  RobotModelConfig cfg;
+  cfg.long_velocity_time_constant_s = 1e-6;
+  cfg.angular_velocity_time_constant_s = 1e-6;
+  cfg.wheel_radius_m = 0.0;  // invalid
+  RobotModel model(cfg);
+  const auto result = model.step(Velocity2D{1.0, 0.0}, 0.1);
+  ASSERT_FALSE(result.has_value());
+  EXPECT_EQ(result.error(), SimulationErrorCodes::InvalidWheelConfig);
+}
