@@ -7,23 +7,25 @@ namespace controller
 namespace domain
 {
 
-LowPassFilter::LowPassFilter(double cutoff_frequency_hz)
-: cutoff_frequency_hz_(cutoff_frequency_hz)
+LowPassFilter::LowPassFilter(double cutoff_frequency_hz) : cutoff_frequency_hz_(cutoff_frequency_hz)
 {
 }
 
 std::expected<double, LowPassFilterErrorCodes> LowPassFilter::step(double input, double dt_s)
 {
-  if (!state_.has_value()) {
+  if (!state_.has_value())
+  {
     state_ = input;
     return input;
   }
 
-  if (cutoff_frequency_hz_ <= 0) {
+  if (cutoff_frequency_hz_ <= 0)
+  {
     return std::unexpected(LowPassFilterErrorCodes::NonPositiveFrequency);
   }
 
-  if (dt_s <= 0) {
+  if (dt_s <= 0)
+  {
     return std::unexpected(LowPassFilterErrorCodes::NonPositiveTimeStep);
   }
 

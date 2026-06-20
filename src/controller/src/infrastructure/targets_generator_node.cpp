@@ -15,8 +15,7 @@ constexpr double kfallback_value = 0.0;
 constexpr double kfallback_duration_s = 10.0;
 }  // namespace
 
-TargetsGeneratorNode::TargetsGeneratorNode()
-: rclcpp::Node("targets_generator")
+TargetsGeneratorNode::TargetsGeneratorNode() : rclcpp::Node("targets_generator")
 {
   declare_parameter<std::vector<double>>("longitudinal.target_velocities_mps",
                                          std::vector<double>{});
@@ -28,28 +27,28 @@ TargetsGeneratorNode::TargetsGeneratorNode()
 
   const bool loop = get_parameter("loop").as_bool();
 
-  auto build_targets = [&](const std::vector<double> & values,
-    const std::vector<double> & durations,
-    const std::string & val_param,
-    const std::string & dur_param) -> std::vector<domain::TimedTarget>
+  auto build_targets = [&](const std::vector<double>& values, const std::vector<double>& durations,
+                           const std::string& val_param,
+                           const std::string& dur_param) -> std::vector<domain::TimedTarget>
+  {
+    if (values.empty())
     {
-      if (values.empty()) {
-        RCLCPP_ERROR(get_logger(), "Parameter '%s' is empty — using fallback values",
+      RCLCPP_ERROR(get_logger(), "Parameter '%s' is empty — using fallback values",
                    val_param.c_str());
-        return {{kfallback_value, kfallback_duration_s}};
-      }
-      if (values.size() != durations.size()) {
-        RCLCPP_ERROR(get_logger(),
-            "'%s' and '%s' must have the same length — using fallback values",
+      return {{kfallback_value, kfallback_duration_s}};
+    }
+    if (values.size() != durations.size())
+    {
+      RCLCPP_ERROR(get_logger(), "'%s' and '%s' must have the same length — using fallback values",
                    val_param.c_str(), dur_param.c_str());
-        return {{kfallback_value, kfallback_duration_s}};
-      }
-      std::vector<domain::TimedTarget> targets;
-      targets.reserve(values.size());
-      std::transform(values.begin(), values.end(), durations.begin(), std::back_inserter(targets),
-        [](double v, double d) {return domain::TimedTarget{v, d};});
-      return targets;
-    };
+      return {{kfallback_value, kfallback_duration_s}};
+    }
+    std::vector<domain::TimedTarget> targets;
+    targets.reserve(values.size());
+    std::transform(values.begin(), values.end(), durations.begin(), std::back_inserter(targets),
+                   [](double v, double d) { return domain::TimedTarget{v, d}; });
+    return targets;
+  };
 
   long_velocity_targets_.emplace(
     build_targets(get_parameter("longitudinal.target_velocities_mps").as_double_array(),
@@ -90,7 +89,8 @@ void TargetsGeneratorNode::publishCallback()
   curv_msg.data = curvature_targets_->step(now_s);
   target_curvature_pub_->publish(curv_msg);
 
-  if (long_velocity_targets_->isFinished() && curvature_targets_->isFinished()) {
+  if (long_velocity_targets_->isFinished() && curvature_targets_->isFinished())
+  {
     RCLCPP_INFO(get_logger(), "Targets profile complete, shutting down");
     rclcpp::shutdown();
   }

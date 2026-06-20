@@ -8,8 +8,7 @@ namespace controller
 namespace infrastructure
 {
 
-ControllerNode::ControllerNode()
-: rclcpp::Node("controller")
+ControllerNode::ControllerNode() : rclcpp::Node("controller")
 {
   // Longitudinal velocity control parameters
   declare_parameter<double>("long.kp", 1.0);
@@ -89,7 +88,8 @@ ControllerNode::ControllerNode()
 
   declare_parameter<double>("control_frequency", 50.0);
   const double control_frequency = get_parameter("control_frequency").as_double();
-  if (control_frequency <= 0.0) {
+  if (control_frequency <= 0.0)
+  {
     throw std::invalid_argument("control_frequency must be positive, got: " +
                                 std::to_string(control_frequency));
   }
@@ -123,10 +123,13 @@ void ControllerNode::controlCallback()
   auto maybe_long_velocity_command = long_velocity_controller_->step(
     target_longitudinal_velocity_mps_, odometry_.twist.twist.linear.x, dt_s_);
 
-  if (!maybe_long_velocity_command) {
+  if (!maybe_long_velocity_command)
+  {
     RCLCPP_WARN(get_logger(), "Longitudinal velocity controller failed: %s",
                 domain::toString(maybe_long_velocity_command.error()).data());
-  } else {
+  }
+  else
+  {
     long_velocity_command_mps = maybe_long_velocity_command.value();
   }
 
@@ -135,10 +138,13 @@ void ControllerNode::controlCallback()
     curvature_controller_->step(target_curvature_per_m_, odometry_.twist.twist.angular.z,
                                 odometry_.twist.twist.linear.x, dt_s_);
 
-  if (!maybe_angular_velocity_command) {
+  if (!maybe_angular_velocity_command)
+  {
     RCLCPP_WARN(get_logger(), "Curvature controller failed: %s",
                 domain::toString(maybe_angular_velocity_command.error()).data());
-  } else {
+  }
+  else
+  {
     angular_velocity_command_radps = maybe_angular_velocity_command.value();
   }
 

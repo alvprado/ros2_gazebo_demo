@@ -14,7 +14,7 @@ using TestPid = PidController<LowPassFilter, LowPassFilter>;
 
 // Helper: build a PID with high-cutoff (≈passthrough) filters so filter
 // dynamics do not interfere with the test assertions.
-static TestPid make_pid(const PidConfig & config, double cutoff_hz = 100.0)
+static TestPid make_pid(const PidConfig& config, double cutoff_hz = 100.0)
 {
   return TestPid(config, LowPassFilter(cutoff_hz), LowPassFilter(cutoff_hz));
 }
@@ -33,7 +33,8 @@ TEST(LowPassFilterTest, ConvergesToConstantInput)
 {
   LowPassFilter f(10.0);
   double y = 0.0;
-  for (int i = 0; i < 500; ++i) {
+  for (int i = 0; i < 500; ++i)
+  {
     auto r = f.step(1.0, 0.01);
     ASSERT_TRUE(r.has_value());
     y = *r;
@@ -149,7 +150,8 @@ TEST(PidControllerTest, IntegralFreezesDuringSaturation)
   config.max_output = 1.0;
   auto pid = make_pid(config);
 
-  for (int i = 0; i < 100; ++i) {
+  for (int i = 0; i < 100; ++i)
+  {
     pid.step(10.0, 0.0, 0.1);
   }
   // After sustained saturation the integral must be bounded;

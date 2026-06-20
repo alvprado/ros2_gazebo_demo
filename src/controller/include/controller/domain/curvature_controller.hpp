@@ -33,7 +33,8 @@ enum class CurvatureControllerErrorCodes : std::uint8_t
 /// @return a string view of the error code for logging purposes
 inline std::string_view toString(CurvatureControllerErrorCodes code)
 {
-  switch (code) {
+  switch (code)
+  {
     case CurvatureControllerErrorCodes::InvalidTimeStep:
       return "InvalidTimeStep";
     case CurvatureControllerErrorCodes::FailedControlLaw:
@@ -44,16 +45,15 @@ inline std::string_view toString(CurvatureControllerErrorCodes code)
 
 /// @brief Controls the target curvature with an angular velocity command
 /// @tparam ControlLaw_T Control law that takes a target, a current and a time step value
-template<typename ControlLaw_T>
+template <typename ControlLaw_T>
 class CurvatureController
 {
 public:
   /// @brief Constructs a curvature controller
   /// @param control_law Control law that takes a target, a current and a time step value
   /// @param config     Config with threshold and spin-in-place settings
-  explicit CurvatureController(
-    const ControlLaw_T & control_law,
-    const CurvatureControllerConfig & config);
+  explicit CurvatureController(const ControlLaw_T& control_law,
+                               const CurvatureControllerConfig& config);
 
   /// @brief Step the curvature controller
   /// @param target_curvature             Desired curvature in one per meter

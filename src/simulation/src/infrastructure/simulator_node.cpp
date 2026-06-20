@@ -13,16 +13,14 @@ namespace simulation
 namespace infrastructure
 {
 
-SimulatorNode::SimulatorNode()
-: rclcpp::Node("robot_simulation")
+SimulatorNode::SimulatorNode() : rclcpp::Node("robot_simulation")
 {
   declare_parameter<double>("long_velocity_time_constant_s", 0.1);
   declare_parameter<double>("angular_velocity_time_constant_s", 0.1);
   declare_parameter<double>("simulation_frequency", 20.0);
 
   domain::RobotModelConfig config;
-  config.long_velocity_time_constant_s =
-    get_parameter("long_velocity_time_constant_s").as_double();
+  config.long_velocity_time_constant_s = get_parameter("long_velocity_time_constant_s").as_double();
   config.angular_velocity_time_constant_s =
     get_parameter("angular_velocity_time_constant_s").as_double();
   robot_model_.emplace(config);
@@ -57,12 +55,13 @@ void SimulatorNode::simulationTimerCallback()
   const rclcpp::Time now = get_clock()->now();
 
   const auto maybe_state = robot_model_->step(cmd_vel_, dt_s_);
-  if (!maybe_state) {
+  if (!maybe_state)
+  {
     RCLCPP_WARN(get_logger(), "Robot model step failed: %s",
                 domain::toString(maybe_state.error()).data());
     return;
   }
-  const auto & state = maybe_state.value();
+  const auto& state = maybe_state.value();
 
   tf2::Quaternion q;
   q.setRPY(0.0, 0.0, state.pose.theta_rad);

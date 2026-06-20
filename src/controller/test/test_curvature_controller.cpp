@@ -14,9 +14,8 @@ using controller::domain::PidController;
 using TestPid = PidController<LowPassFilter, LowPassFilter>;
 using TestCurv = CurvatureController<TestPid>;
 
-static TestCurv make_curv(
-  double threshold = 0.1, bool spin = false, double spin_vel = 0.0,
-  double kp = 1.0)
+static TestCurv make_curv(double threshold = 0.1, bool spin = false, double spin_vel = 0.0,
+                          double kp = 1.0)
 {
   CurvatureControllerConfig cfg;
   cfg.lower_long_velocity_threshold_mps = threshold;

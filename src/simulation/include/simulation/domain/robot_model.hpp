@@ -33,7 +33,8 @@ enum class SimulationErrorCodes : std::uint8_t
 /// @return a string view of the error code for logging purposes
 inline std::string_view toString(SimulationErrorCodes code)
 {
-  switch (code) {
+  switch (code)
+  {
     case SimulationErrorCodes::NonPositiveTimeConstant:
       return "NonPositiveTimeConstant";
     case SimulationErrorCodes::InvalidTimeStep:
@@ -49,14 +50,13 @@ class RobotModel
 public:
   /// @brief Construct a robot model from its config
   /// @param config Time constants for longitudinal and angular velocity lags
-  explicit RobotModel(const RobotModelConfig & config);
+  explicit RobotModel(const RobotModelConfig& config);
 
   /// @brief Compute the next robot state
   /// @param velocity_cmd Longitudinal [m/s] and angular [rad/s] velocity commands
   /// @param dt_s         Time step [s]
   /// @return Updated robot state or an error code
-  std::expected<State, SimulationErrorCodes> step(
-    const Velocity2D & velocity_cmd, double dt_s);
+  std::expected<State, SimulationErrorCodes> step(const Velocity2D& velocity_cmd, double dt_s);
 
 private:
   RobotModelConfig config_;
