@@ -1,4 +1,5 @@
 /**:
   ros__parameters:
-    long_time_constant: 0.5
+    long_velocity_time_constant_s: 0.5
+    angular_velocity_time_constant_s: 0.1
     simulation_frequency: 20.0

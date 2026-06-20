@@ -9,16 +9,16 @@ namespace domain
 /// @brief Planar (2D) velocity
 struct Velocity2D
 {
-  double linear{0.0};
-  double angular{0.0};
+  double linear_mps{0.0};
+  double angular_radps{0.0};
 };
 
 /// @brief Planar (2D) pose.
 struct Pose2D
 {
-  double x{0.0};
-  double y{0.0};
-  double theta{0.0};
+  double x_m{0.0};
+  double y_m{0.0};
+  double theta_rad{0.0};
 };
 
 /// @brief State of the robot

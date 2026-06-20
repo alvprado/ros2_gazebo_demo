@@ -21,7 +21,7 @@ add_library(${PROJECT_NAME}_domain
 target_include_directories(${PROJECT_NAME}_domain PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-target_compile_features(${PROJECT_NAME}_domain PUBLIC cxx_std_17)
+target_compile_features(${PROJECT_NAME}_domain PUBLIC cxx_std_23)
 
 # Core library: ROS 2 infrastructure, depends on the domain library.
 add_library(${PROJECT_NAME}_core
@@ -30,7 +30,7 @@ add_library(${PROJECT_NAME}_core
 target_include_directories(${PROJECT_NAME}_core PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-target_compile_features(${PROJECT_NAME}_core PUBLIC cxx_std_17)
+target_compile_features(${PROJECT_NAME}_core PUBLIC cxx_std_23)
 target_link_libraries(${PROJECT_NAME}_core PUBLIC ${PROJECT_NAME}_domain)
 ament_target_dependencies(${PROJECT_NAME}_core PUBLIC
   rclcpp
@@ -43,7 +43,7 @@ ament_target_dependencies(${PROJECT_NAME}_core PUBLIC
 
 # Executable
 add_executable(simple_simulation src/simulator_node_main.cpp)
-target_compile_features(simple_simulation PUBLIC cxx_std_17)
+target_compile_features(simple_simulation PUBLIC cxx_std_23)
 target_link_libraries(simple_simulation ${PROJECT_NAME}_core)
 
 install(TARGETS
@@ -79,6 +79,7 @@ if(BUILD_TESTING)
 
   find_package(ament_cmake_gtest REQUIRED)
   ament_add_gtest(test_robot_model test/test_robot_model.cpp)
+  target_compile_features(test_robot_model PUBLIC cxx_std_23)
   target_link_libraries(test_robot_model ${PROJECT_NAME}_domain)
 endif()
 

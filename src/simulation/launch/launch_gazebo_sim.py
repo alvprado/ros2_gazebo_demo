@@ -14,12 +14,13 @@ def generate_launch_description():
     controller_pkg = get_package_share_directory('controller')
     simulation_pkg = get_package_share_directory('simulation')
 
-    urdf_file   = os.path.join(robot_description_pkg, 'urdf', 'robot.urdf.xacro')
-    world_file  = os.path.join(robot_description_pkg, 'worlds', 'demo_world.sdf')
+    urdf_file = os.path.join(robot_description_pkg, 'urdf', 'robot.urdf.xacro')
+    world_file = os.path.join(robot_description_pkg, 'worlds', 'demo_world.sdf')
 
-    controller_params       = os.path.join(controller_pkg, 'config', 'controller_params.yaml')
-    targets_generator_params = os.path.join(controller_pkg, 'config', 'targets_generator_params.yaml')
-    rviz_config                = os.path.join(simulation_pkg, 'config', 'demo.rviz')
+    controller_params = os.path.join(controller_pkg, 'config', 'controller_params.yaml')
+    targets_generator_params = os.path.join(
+        controller_pkg, 'config', 'targets_generator_params.yaml')
+    rviz_config = os.path.join(simulation_pkg, 'config', 'demo.rviz')
 
     # ── Process Xacro → URDF string ─────────────────────────────────────
     # xacro.process_file expands all macros and properties into plain URDF XML.

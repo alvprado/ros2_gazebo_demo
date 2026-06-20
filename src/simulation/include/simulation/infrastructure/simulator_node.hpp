@@ -35,7 +35,7 @@ private:
 
   domain::Velocity2D cmd_vel_;
 
-  double dt_;
+  double dt_s_{0.0};
 };
 
 }  // namespace infrastructure
