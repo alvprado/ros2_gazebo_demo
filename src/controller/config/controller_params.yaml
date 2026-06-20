@@ -1,0 +1,26 @@
+/**:
+  ros__parameters:
+    long:
+      kp: 1.0
+      ki: 0.1
+      kd: 0.01
+      kff: 1.0
+      setpoint_filter_cutoff_frequency_hz: 0.1
+      derivative_filter_cutoff_frequency_hz: 0.01
+      max_velocity_mps: 2.0
+      min_velocity_mps: -2.0
+
+    angular:
+      kp: 1.0
+      ki: 0.1
+      kd: 0.01
+      kff: 1.0
+      setpoint_filter_cutoff_frequency_hz: 0.1
+      derivative_filter_cutoff_frequency_hz: 0.01
+      max_velocity_radps: 1.5
+      min_velocity_radps: -1.5
+      lower_long_velocity_threshold_mps: 0.1
+      spin_in_place: false
+      spin_velocity_radps: 0.3
+
+    control_frequency: 20.0

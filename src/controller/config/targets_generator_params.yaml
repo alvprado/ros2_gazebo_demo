@@ -1,0 +1,12 @@
+/**:
+  ros__parameters:
+    longitudinal:
+      target_velocities_mps: [1.0]
+      durations_s:           [10.0]
+
+    curvature:
+      target_curvatures_pm: [0.1, -0.1]
+      durations_s:             [5.0, 5.0]
+
+    targets_update_frequency_hz: 20.0
+    loop: true

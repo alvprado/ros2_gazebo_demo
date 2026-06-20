@@ -10,60 +10,61 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
 
 # Domain library: pure C++, no ROS dependencies.
 add_library(${PROJECT_NAME}_domain
   src/domain/low_pass_filter.cpp
-  src/domain/velocity_profile.cpp
+  src/domain/targets_generator.cpp
 )
 target_include_directories(${PROJECT_NAME}_domain PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 target_compile_features(${PROJECT_NAME}_domain PUBLIC cxx_std_23)
 
-# Core library: ROS 2 infrastructure for the velocity controller.
+# Core library: ROS 2 infrastructure for the controller node.
 add_library(${PROJECT_NAME}_core
-  src/infrastructure/velocity_controller_node.cpp
+  src/infrastructure/controller_node.cpp
 )
 target_include_directories(${PROJECT_NAME}_core PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 target_compile_features(${PROJECT_NAME}_core PUBLIC cxx_std_23)
 target_link_libraries(${PROJECT_NAME}_core PUBLIC ${PROJECT_NAME}_domain)
-ament_target_dependencies(${PROJECT_NAME}_core PUBLIC rclcpp geometry_msgs nav_msgs)
+ament_target_dependencies(${PROJECT_NAME}_core PUBLIC rclcpp geometry_msgs nav_msgs std_msgs)
 
-# Target velocity library: ROS 2 infrastructure for the target velocity node.
-add_library(${PROJECT_NAME}_target_velocity_core
-  src/infrastructure/target_velocity_node.cpp
+# Targets generator library: ROS 2 infrastructure for the targets generator node.
+add_library(${PROJECT_NAME}_targets_generator_core
+  src/infrastructure/targets_generator_node.cpp
 )
-target_include_directories(${PROJECT_NAME}_target_velocity_core PUBLIC
+target_include_directories(${PROJECT_NAME}_targets_generator_core PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-target_compile_features(${PROJECT_NAME}_target_velocity_core PUBLIC cxx_std_23)
-target_link_libraries(${PROJECT_NAME}_target_velocity_core PUBLIC ${PROJECT_NAME}_domain)
-ament_target_dependencies(${PROJECT_NAME}_target_velocity_core PUBLIC rclcpp geometry_msgs)
+target_compile_features(${PROJECT_NAME}_targets_generator_core PUBLIC cxx_std_23)
+target_link_libraries(${PROJECT_NAME}_targets_generator_core PUBLIC ${PROJECT_NAME}_domain)
+ament_target_dependencies(${PROJECT_NAME}_targets_generator_core PUBLIC rclcpp std_msgs)
 
 # Executables
-add_executable(velocity_controller src/velocity_controller_main.cpp)
-target_compile_features(velocity_controller PUBLIC cxx_std_23)
-target_link_libraries(velocity_controller ${PROJECT_NAME}_core)
+add_executable(controller src/controller_main.cpp)
+target_compile_features(controller PUBLIC cxx_std_23)
+target_link_libraries(controller ${PROJECT_NAME}_core)
 
-add_executable(target_velocity src/target_velocity_main.cpp)
-target_compile_features(target_velocity PUBLIC cxx_std_23)
-target_link_libraries(target_velocity ${PROJECT_NAME}_target_velocity_core)
+add_executable(targets_generator src/targets_generator_main.cpp)
+target_compile_features(targets_generator PUBLIC cxx_std_23)
+target_link_libraries(targets_generator ${PROJECT_NAME}_targets_generator_core)
 
 install(TARGETS
   ${PROJECT_NAME}_domain
   ${PROJECT_NAME}_core
-  ${PROJECT_NAME}_target_velocity_core
+  ${PROJECT_NAME}_targets_generator_core
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
 
 install(TARGETS
-  velocity_controller
-  target_velocity
+  controller
+  targets_generator
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY include/
@@ -82,6 +83,10 @@ if(BUILD_TESTING)
   ament_add_gtest(test_pid_controller test/test_pid_controller.cpp)
   target_link_libraries(test_pid_controller ${PROJECT_NAME}_domain)
   target_compile_features(test_pid_controller PUBLIC cxx_std_23)
+
+  ament_add_gtest(test_curvature_controller test/test_curvature_controller.cpp)
+  target_link_libraries(test_curvature_controller ${PROJECT_NAME}_domain)
+  target_compile_features(test_curvature_controller PUBLIC cxx_std_23)
 endif()
 
 ament_package()

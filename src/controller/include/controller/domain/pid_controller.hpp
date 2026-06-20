@@ -45,10 +45,12 @@ enum class PidErrorCodes : std::uint8_t
   InvalidTimeStep = 3U,
 };
 
+/// @brief Map error codes to a string view
+/// @param code pid error code
+/// @return a string view of the pid error codes for logging purposes
 inline std::string_view toString(PidErrorCodes code)
 {
-  switch (code)
-  {
+  switch (code) {
     case PidErrorCodes::NonPositiveGains:
       return "NonPositiveGains";
     case PidErrorCodes::InvalidLimits:
@@ -64,14 +66,15 @@ inline std::string_view toString(PidErrorCodes code)
 /// @brief PID controller with feedforward
 /// @tparam SetpointFilter_T Filter for target values
 /// @tparam DerivativeFilter_T Derivative term filter
-template <typename SetpointFilter_T, typename DerivativeFilter_T>
+template<typename SetpointFilter_T, typename DerivativeFilter_T>
 class PidController
 {
 public:
   /// @brief Constructs a PID controller from its config
   /// @param config Config containing gains, filter frequencies and limits
-  explicit PidController(const PidConfig& config, const SetpointFilter_T& setpoint_filter,
-                         const DerivativeFilter_T& derivative_filter);
+  explicit PidController(
+    const PidConfig & config, const SetpointFilter_T & setpoint_filter,
+    const DerivativeFilter_T & derivative_filter);
 
   /// @brief Step the PID controller
   /// @param setpoint  Desired value

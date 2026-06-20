@@ -17,8 +17,8 @@ def generate_launch_description():
     urdf_file   = os.path.join(robot_description_pkg, 'urdf', 'robot.urdf.xacro')
     world_file  = os.path.join(robot_description_pkg, 'worlds', 'demo_world.sdf')
 
-    velocity_controller_params = os.path.join(controller_pkg, 'config', 'velocity_controller_params.yaml')
-    target_velocity_params     = os.path.join(controller_pkg, 'config', 'target_velocity_params.yaml')
+    controller_params       = os.path.join(controller_pkg, 'config', 'controller_params.yaml')
+    targets_generator_params = os.path.join(controller_pkg, 'config', 'targets_generator_params.yaml')
     rviz_config                = os.path.join(simulation_pkg, 'config', 'demo.rviz')
 
     # ── Process Xacro → URDF string ─────────────────────────────────────
@@ -116,16 +116,16 @@ def generate_launch_description():
         actions=[
             Node(
                 package='controller',
-                executable='target_velocity',
-                name='target_velocity_node',
-                parameters=[target_velocity_params],
+                executable='targets_generator',
+                name='targets_generator',
+                parameters=[targets_generator_params],
                 output='screen',
             ),
             Node(
                 package='controller',
-                executable='velocity_controller',
-                name='velocity_controller',
-                parameters=[velocity_controller_params],
+                executable='controller',
+                name='controller',
+                parameters=[controller_params],
                 output='screen',
             ),
         ],

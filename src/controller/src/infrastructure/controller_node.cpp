@@ -1,4 +1,4 @@
-#include "controller/infrastructure/velocity_controller_node.hpp"
+#include "controller/infrastructure/controller_node.hpp"
 
 #include <chrono>
 #include <stdexcept>
@@ -8,10 +8,10 @@ namespace controller
 namespace infrastructure
 {
 
-VelocityControllerNode::VelocityControllerNode()
-: rclcpp::Node("velocity_controller")
+ControllerNode::ControllerNode()
+: rclcpp::Node("controller")
 {
-  // Longitudinal (linear.x) parameters
+  // Longitudinal velocity control parameters
   declare_parameter<double>("long.kp", 1.0);
   declare_parameter<double>("long.ki", 0.0);
   declare_parameter<double>("long.kd", 0.0);
@@ -36,7 +36,7 @@ VelocityControllerNode::VelocityControllerNode()
 
   long_velocity_controller_.emplace(long_config, long_setpoint_filter, long_derivative_filter);
 
-  // Angular (angular.z) parameters
+  // Curvature controller parameters
   declare_parameter<double>("angular.kp", 1.0);
   declare_parameter<double>("angular.ki", 0.0);
   declare_parameter<double>("angular.kd", 0.0);
@@ -45,6 +45,9 @@ VelocityControllerNode::VelocityControllerNode()
   declare_parameter<double>("angular.derivative_filter_cutoff_frequency_hz", 1.0);
   declare_parameter<double>("angular.min_velocity_radps", -100.0);
   declare_parameter<double>("angular.max_velocity_radps", 100.0);
+  declare_parameter<double>("angular.lower_long_velocity_threshold_mps", 0.1);
+  declare_parameter<bool>("angular.spin_in_place", false);
+  declare_parameter<double>("angular.spin_velocity_radps", 0.0);
 
   domain::PidConfig angular_config;
   angular_config.kp = get_parameter("angular.kp").as_double();
@@ -59,17 +62,28 @@ VelocityControllerNode::VelocityControllerNode()
   const domain::LowPassFilter angular_derivative_filter(
     get_parameter("angular.derivative_filter_cutoff_frequency_hz").as_double());
 
-  angular_pid_.emplace(angular_config, angular_setpoint_filter, angular_derivative_filter);
+  domain::CurvatureControllerConfig curv_config;
+  curv_config.lower_long_velocity_threshold_mps =
+    get_parameter("angular.lower_long_velocity_threshold_mps").as_double();
+  curv_config.spin_in_place = get_parameter("angular.spin_in_place").as_bool();
+  curv_config.spin_velocity_radps = get_parameter("angular.spin_velocity_radps").as_double();
+
+  curvature_controller_.emplace(
+    PidControllerType(angular_config, angular_setpoint_filter, angular_derivative_filter),
+    curv_config);
 
   const rclcpp::QoS command_qos = rclcpp::QoS(10).reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE);
 
-  target_velocity_sub_ = create_subscription<geometry_msgs::msg::Twist>(
-    "target_velocity", command_qos,
-    std::bind(&VelocityControllerNode::targetVelocityCallback, this, std::placeholders::_1));
+  target_long_velocity_sub_ = create_subscription<std_msgs::msg::Float64>(
+    "target_longitudinal_velocity", command_qos,
+    std::bind(&ControllerNode::targetLongVelocityCallback, this, std::placeholders::_1));
+
+  target_curvature_sub_ = create_subscription<std_msgs::msg::Float64>(
+    "target_curvature", command_qos,
+    std::bind(&ControllerNode::targetCurvatureCallback, this, std::placeholders::_1));
 
   odometry_sub_ = create_subscription<nav_msgs::msg::Odometry>(
-    "odom", command_qos,
-    std::bind(&VelocityControllerNode::odometryCallback, this, std::placeholders::_1));
+    "odom", command_qos, std::bind(&ControllerNode::odometryCallback, this, std::placeholders::_1));
 
   velocity_command_pub_ = create_publisher<geometry_msgs::msg::Twist>("cmd_vel", command_qos);
 
@@ -83,28 +97,34 @@ VelocityControllerNode::VelocityControllerNode()
   const auto control_period = std::chrono::duration<double>(dt_s_);
   control_timer_ =
     create_wall_timer(std::chrono::duration_cast<std::chrono::nanoseconds>(control_period),
-                      std::bind(&VelocityControllerNode::controlCallback, this));
+                      std::bind(&ControllerNode::controlCallback, this));
 
-  RCLCPP_INFO(get_logger(), "Velocity controller node started");
+  RCLCPP_INFO(get_logger(), "Controller node started");
 }
 
-void VelocityControllerNode::targetVelocityCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
+void ControllerNode::targetLongVelocityCallback(const std_msgs::msg::Float64::SharedPtr msg)
 {
-  target_velocity_ = *msg;
+  target_longitudinal_velocity_mps_ = msg->data;
 }
 
-void VelocityControllerNode::odometryCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
+void ControllerNode::targetCurvatureCallback(const std_msgs::msg::Float64::SharedPtr msg)
+{
+  target_curvature_per_m_ = msg->data;
+}
+
+void ControllerNode::odometryCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
 {
   odometry_ = *msg;
 }
 
-void VelocityControllerNode::controlCallback()
+void ControllerNode::controlCallback()
 {
   double long_velocity_command_mps{0.0};
   auto maybe_long_velocity_command = long_velocity_controller_->step(
-    target_velocity_.linear.x, odometry_.twist.twist.linear.x, dt_s_);
+    target_longitudinal_velocity_mps_, odometry_.twist.twist.linear.x, dt_s_);
+
   if (!maybe_long_velocity_command) {
-    RCLCPP_WARN(get_logger(), "Longitudinal controller failed: %s",
+    RCLCPP_WARN(get_logger(), "Longitudinal velocity controller failed: %s",
                 domain::toString(maybe_long_velocity_command.error()).data());
   } else {
     long_velocity_command_mps = maybe_long_velocity_command.value();
@@ -112,9 +132,11 @@ void VelocityControllerNode::controlCallback()
 
   double angular_velocity_command_radps{0.0};
   auto maybe_angular_velocity_command =
-    angular_pid_->step(target_velocity_.angular.z, odometry_.twist.twist.angular.z, dt_s_);
+    curvature_controller_->step(target_curvature_per_m_, odometry_.twist.twist.angular.z,
+                                odometry_.twist.twist.linear.x, dt_s_);
+
   if (!maybe_angular_velocity_command) {
-    RCLCPP_WARN(get_logger(), "Angular controller failed: %s",
+    RCLCPP_WARN(get_logger(), "Curvature controller failed: %s",
                 domain::toString(maybe_angular_velocity_command.error()).data());
   } else {
     angular_velocity_command_radps = maybe_angular_velocity_command.value();
