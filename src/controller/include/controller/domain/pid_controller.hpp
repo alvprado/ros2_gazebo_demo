@@ -1,6 +1,7 @@
 #ifndef CONTROLLER_DOMAIN_PID_CONTROLLER_HPP
 #define CONTROLLER_DOMAIN_PID_CONTROLLER_HPP
 
+#include <concepts>
 #include <expected>
 #include <limits>
 #include <ostream>
@@ -64,10 +65,23 @@ inline std::string_view toString(PidErrorCodes code)
   return "Unknown";
 }
 
+/// @brief Result type returned by a filter step — carries a double output with a fallback
+template <typename Result_T>
+concept FilterResultWithFallback = requires(Result_T result, double fallback) {
+  { result.value_or(fallback) } -> std::convertible_to<double>;
+};
+
+/// @brief A copyable filter type with a step(input, dt_s) method returning a
+/// FilterResultWithFallback
+template <typename Filter_T>
+concept Filter = std::copyable<Filter_T> && requires(Filter_T filter, double input, double dt_s) {
+  { filter.step(input, dt_s) } -> FilterResultWithFallback;
+};
+
 /// @brief PID controller with feedforward
 /// @tparam SetpointFilter_T Filter for target values
 /// @tparam DerivativeFilter_T Derivative term filter
-template <typename SetpointFilter_T, typename DerivativeFilter_T>
+template <Filter SetpointFilter_T, Filter DerivativeFilter_T>
 class PidController
 {
 public:

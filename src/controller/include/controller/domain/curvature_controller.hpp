@@ -1,6 +1,7 @@
 #ifndef CONTROLLER_DOMAIN_CURVATURE_CONTROLLER_HPP
 #define CONTROLLER_DOMAIN_CURVATURE_CONTROLLER_HPP
 
+#include <concepts>
 #include <cstdint>
 #include <expected>
 #include <string_view>
@@ -43,9 +44,25 @@ inline std::string_view toString(CurvatureControllerErrorCodes code)
   return "Unknown";
 }
 
+/// @brief Result type returned by a control law step — bool-testable and carries a double scalar
+/// output
+template <typename Result_T>
+concept ScalarControlLawResult = requires(Result_T result) {
+  { result.has_value() } -> std::convertible_to<bool>;
+  { result.value() } -> std::convertible_to<double>;
+};
+
+/// @brief A copyable control law type with a step(setpoint, current, dt_s) method returning a
+/// ScalarControlLawResult
+template <typename Law_T>
+concept ControlLaw =
+  std::copyable<Law_T> && requires(Law_T law, double setpoint, double current, double dt_s) {
+    { law.step(setpoint, current, dt_s) } -> ScalarControlLawResult;
+  };
+
 /// @brief Controls the target curvature with an angular velocity command
 /// @tparam ControlLaw_T Control law that takes a target, a current and a time step value
-template <typename ControlLaw_T>
+template <ControlLaw ControlLaw_T>
 class CurvatureController
 {
 public:

@@ -10,7 +10,7 @@ namespace controller
 namespace domain
 {
 
-template <typename SetpointFilter_T, typename DerivativeFilter_T>
+template <Filter SetpointFilter_T, Filter DerivativeFilter_T>
 PidController<SetpointFilter_T, DerivativeFilter_T>::PidController(
   const PidConfig& config, const SetpointFilter_T& setpoint_filter,
   const DerivativeFilter_T& derivative_filter)
@@ -18,7 +18,7 @@ PidController<SetpointFilter_T, DerivativeFilter_T>::PidController(
 {
 }
 
-template <typename SetpointFilter_T, typename DerivativeFilter_T>
+template <Filter SetpointFilter_T, Filter DerivativeFilter_T>
 std::expected<double, PidErrorCodes> PidController<SetpointFilter_T, DerivativeFilter_T>::step(
   double setpoint, double current, double dt_s)
 {

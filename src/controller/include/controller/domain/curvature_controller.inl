@@ -10,14 +10,14 @@ namespace controller
 namespace domain
 {
 
-template <typename ControlLaw_T>
+template <ControlLaw ControlLaw_T>
 CurvatureController<ControlLaw_T>::CurvatureController(const ControlLaw_T& control_law,
                                                        const CurvatureControllerConfig& config)
   : control_law_(control_law), config_(config)
 {
 }
 
-template <typename ControlLaw_T>
+template <ControlLaw ControlLaw_T>
 std::expected<double, CurvatureControllerErrorCodes> CurvatureController<ControlLaw_T>::step(
   double target_curvature_pm, double current_angular_velocity_radps,
   double current_longitudinal_velocity_mps, double dt_s)
