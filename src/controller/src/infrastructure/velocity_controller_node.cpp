@@ -81,9 +81,9 @@ VelocityControllerNode::VelocityControllerNode() : rclcpp::Node("velocity_contro
   }
   dt_s_ = 1.0 / control_frequency;
   const auto control_period = std::chrono::duration<double>(dt_s_);
-  control_timer_ =
+  controller_timer_ =
     create_wall_timer(std::chrono::duration_cast<std::chrono::nanoseconds>(control_period),
-                      std::bind(&VelocityControllerNode::controlCallback, this));
+                      std::bind(&VelocityControllerNode::controllerCallback, this));
 
   RCLCPP_INFO(get_logger(), "Velocity controller node started");
 }
@@ -98,7 +98,7 @@ void VelocityControllerNode::odometryCallback(const nav_msgs::msg::Odometry::Sha
   odometry_ = *msg;
 }
 
-void VelocityControllerNode::controlCallback()
+void VelocityControllerNode::controllerCallback()
 {
   double long_velocity_command_mps{0.0};
   auto maybe_long_velocity_command = long_velocity_controller_->step(

@@ -29,13 +29,13 @@ private:
   void targetLongVelocityCallback(const std_msgs::msg::Float64::SharedPtr msg);
   void targetCurvatureCallback(const std_msgs::msg::Float64::SharedPtr msg);
   void odometryCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
-  void controlCallback();
+  void controllerCallback();
 
   rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr target_long_velocity_sub_;
   rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr target_curvature_sub_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odometry_sub_;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr velocity_command_pub_;
-  rclcpp::TimerBase::SharedPtr control_timer_;
+  rclcpp::TimerBase::SharedPtr controller_timer_;
 
   std::optional<PidControllerType> long_velocity_controller_;
   std::optional<CurvCtrlType> curvature_controller_;

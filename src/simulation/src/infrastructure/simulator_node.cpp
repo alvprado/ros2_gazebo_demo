@@ -6,6 +6,8 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
+#include "simulation/domain/integrators.hpp"
+
 using namespace std::chrono_literals;
 
 namespace simulation
@@ -15,6 +17,7 @@ namespace infrastructure
 
 SimulatorNode::SimulatorNode() : rclcpp::Node("robot_simulation")
 {
+  // Get parameters
   declare_parameter<double>("long_velocity_time_constant_s", 0.1);
   declare_parameter<double>("angular_velocity_time_constant_s", 0.1);
   declare_parameter<double>("simulation_frequency", 20.0);
@@ -22,22 +25,30 @@ SimulatorNode::SimulatorNode() : rclcpp::Node("robot_simulation")
   declare_parameter<double>("wheel_radius_m", 0.05);
   declare_parameter<double>("wheel_separation_m", 0.30);
 
+  // Build robot config
   domain::RobotModelConfig config;
   config.long_velocity_time_constant_s = get_parameter("long_velocity_time_constant_s").as_double();
   config.angular_velocity_time_constant_s =
     get_parameter("angular_velocity_time_constant_s").as_double();
   config.wheel_radius_m = get_parameter("wheel_radius_m").as_double();
   config.wheel_separation_m = get_parameter("wheel_separation_m").as_double();
-  robot_model_.emplace(config);
+
+  // Build robot model with forward euler integration scheme
+  auto const forwardEulerIntegrationMethod =
+    [](const domain::State& state, const domain::Velocity2D& velocity_cmd,
+       const domain::RobotModel::DerivativeFunction& derivative_fn, double dt_s)
+  { return domain::forwardEulerStep(state, velocity_cmd, derivative_fn, dt_s); };
+
+  robot_model_.emplace(forwardEulerIntegrationMethod, config);
 
   const rclcpp::QoS command_qos = rclcpp::QoS(10).reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE);
 
-  cmd_vel_sub_ = create_subscription<geometry_msgs::msg::Twist>(
-    "cmd_vel", command_qos, std::bind(&SimulatorNode::cmdVelCallback, this, std::placeholders::_1));
+  velocity_command_sub_ = create_subscription<geometry_msgs::msg::Twist>(
+    "cmd_vel", command_qos,
+    std::bind(&SimulatorNode::velocityCommandCallback, this, std::placeholders::_1));
 
   odom_pub_ = create_publisher<nav_msgs::msg::Odometry>("odom", command_qos);
-  joint_state_pub_ =
-    create_publisher<sensor_msgs::msg::JointState>("joint_states", command_qos);
+  joint_state_pub_ = create_publisher<sensor_msgs::msg::JointState>("joint_states", command_qos);
 
   tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
 
@@ -46,18 +57,18 @@ SimulatorNode::SimulatorNode() : rclcpp::Node("robot_simulation")
   const auto simulation_period = std::chrono::duration<double>(dt_s_);
   simulation_timer_ =
     create_wall_timer(std::chrono::duration_cast<std::chrono::nanoseconds>(simulation_period),
-                      std::bind(&SimulatorNode::simulationTimerCallback, this));
+                      std::bind(&SimulatorNode::simulationCallback, this));
 
   RCLCPP_INFO(get_logger(), "Simulation node started");
 }
 
-void SimulatorNode::cmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
+void SimulatorNode::velocityCommandCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
 {
   cmd_vel_.linear_mps = msg->linear.x;
   cmd_vel_.angular_radps = msg->angular.z;
 }
 
-void SimulatorNode::simulationTimerCallback()
+void SimulatorNode::simulationCallback()
 {
   const rclcpp::Time now = get_clock()->now();
 

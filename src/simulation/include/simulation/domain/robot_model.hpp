@@ -3,9 +3,10 @@
 
 #include <cstdint>
 #include <expected>
+#include <functional>
 #include <string_view>
 
-#include "simulation/domain/types.hpp"
+#include "simulation/domain/robot_state_types.hpp"
 
 namespace simulation
 {
@@ -50,24 +51,50 @@ inline std::string_view toString(SimulationErrorCodes code)
   return "Unknown";
 }
 
-/// @brief Robot simulation model
-/// @details Robot is modeled as a first-order system; pose is integrated with forward Euler
+/// @brief The robot model used for simulation
+/// @details It steps the state of the robot given an
+/// integration method and the robot parameters based on the robot dynamics described in the
+/// computeDerivative method
 class RobotModel
 {
 public:
-  /// @brief Construct a robot model from its config
-  /// @param config Time constants for longitudinal and angular velocity lags
-  explicit RobotModel(const RobotModelConfig& config);
+  /// @brief Alias for the robot commands - linear and angular velocities
+  using Command = Velocity2D;
+
+  /// @brief Alias for callable that evaluates the robot dynamics x_dot = f(x, u)
+  using DerivativeFunction = std::function<StateDerivative(const State&, const Command&)>;
+
+  /// @brief Alias for a functor that advances the state by one time step using any integration
+  /// scheme
+  using IntegrationMethod =
+    std::function<State(const State&, const Command&, const DerivativeFunction&, double)>;
+
+  /// @brief Construct a robot model from its config and a pluggable integration method
+  /// @param integrator Integration method (e.g. forward euler, heun, Runge-Kutta, etc)
+  /// @param config     Robot model parameters
+  RobotModel(IntegrationMethod integrator, const RobotModelConfig& config);
 
   /// @brief Compute the next robot state
-  /// @param velocity_cmd Longitudinal [m/s] and angular [rad/s] velocity commands
-  /// @param dt_s         Time step [s]
+  /// @param velocity_cmd longitudinal and angular velocity commands
+  /// @param dt_s         time step in seconds
   /// @return Updated robot state or an error code
-  std::expected<State, SimulationErrorCodes> step(const Velocity2D& velocity_cmd, double dt_s);
+  std::expected<State, SimulationErrorCodes> step(const Command& velocity_cmd, double dt_s);
 
 private:
+  /// @brief Computation of a robot state derivative based on the robot dynamics
+  /// @param state The current robot state
+  /// @param velocity_cmd The velocity commands
+  /// @return A state derivative
+  StateDerivative computeDerivative(const State& state, const Command& velocity_cmd) const;
+
+  // Robot parameters
   RobotModelConfig config_;
-  State previous_state_;
+
+  // The current robot state
+  State state_{};
+
+  // The integration scheme
+  IntegrationMethod integrator_;
 };
 
 }  // namespace domain

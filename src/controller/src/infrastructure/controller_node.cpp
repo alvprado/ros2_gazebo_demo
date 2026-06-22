@@ -95,9 +95,9 @@ ControllerNode::ControllerNode() : rclcpp::Node("controller")
   }
   dt_s_ = 1.0 / control_frequency;
   const auto control_period = std::chrono::duration<double>(dt_s_);
-  control_timer_ =
+  controller_timer_ =
     create_wall_timer(std::chrono::duration_cast<std::chrono::nanoseconds>(control_period),
-                      std::bind(&ControllerNode::controlCallback, this));
+                      std::bind(&ControllerNode::controllerCallback, this));
 
   RCLCPP_INFO(get_logger(), "Controller node started");
 }
@@ -117,7 +117,7 @@ void ControllerNode::odometryCallback(const nav_msgs::msg::Odometry::SharedPtr m
   odometry_ = *msg;
 }
 
-void ControllerNode::controlCallback()
+void ControllerNode::controllerCallback()
 {
   double long_velocity_command_mps{0.0};
   auto maybe_long_velocity_command = long_velocity_controller_->step(

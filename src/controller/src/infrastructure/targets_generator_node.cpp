@@ -70,16 +70,16 @@ TargetsGeneratorNode::TargetsGeneratorNode() : rclcpp::Node("targets_generator")
   // TODO: Protect division by zero - rename period
   const double dt_s = 1.0 / get_parameter("targets_update_frequency_hz").as_double();
   const auto period = std::chrono::duration<double>(dt_s);
-  target_velocity_pub_timer_ =
+  targets_generator_timer_ =
     create_wall_timer(std::chrono::duration_cast<std::chrono::nanoseconds>(period),
-                      std::bind(&TargetsGeneratorNode::publishCallback, this));
+                      std::bind(&TargetsGeneratorNode::targetsGeneratorCallback, this));
 
   RCLCPP_INFO(get_logger(), "Targets generator node started");
 }
 
-void TargetsGeneratorNode::publishCallback()
+void TargetsGeneratorNode::targetsGeneratorCallback()
 {
-  const double now_s = this->now().seconds();
+  const double now_s = get_clock()->now().seconds();
 
   std_msgs::msg::Float64 long_msg;
   long_msg.data = long_velocity_targets_->step(now_s);

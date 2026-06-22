@@ -24,10 +24,10 @@ public:
   SimulatorNode();
 
 private:
-  void cmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg);
-  void simulationTimerCallback();
+  void velocityCommandCallback(const geometry_msgs::msg::Twist::SharedPtr msg);
+  void simulationCallback();
 
-  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr velocity_command_sub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;

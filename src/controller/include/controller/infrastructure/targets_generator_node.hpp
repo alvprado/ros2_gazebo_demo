@@ -19,11 +19,11 @@ public:
   TargetsGeneratorNode();
 
 private:
-  void publishCallback();
+  void targetsGeneratorCallback();
 
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr target_long_velocity_pub_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr target_curvature_pub_;
-  rclcpp::TimerBase::SharedPtr target_velocity_pub_timer_;
+  rclcpp::TimerBase::SharedPtr targets_generator_timer_;
 
   std::optional<domain::TargetsGenerator> long_velocity_targets_;
   std::optional<domain::TargetsGenerator> curvature_targets_;
