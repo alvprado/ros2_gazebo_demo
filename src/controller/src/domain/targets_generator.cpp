@@ -1,8 +1,10 @@
 #include "controller/domain/targets_generator.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <functional>
 #include <numeric>
+#include <ranges>
 
 namespace controller
 {
@@ -12,9 +14,9 @@ namespace domain
 TargetsGenerator::TargetsGenerator(std::vector<TimedTarget> targets, bool loop)
   : targets_(std::move(targets)), loop_(loop)
 {
-  total_duration_s_ =
-    std::transform_reduce(targets_.begin(), targets_.end(), 0.0, std::plus<double>{},
-                          [](const TimedTarget& target) { return target.duration_s; });
+  // Sum up the durations of the target steps
+  total_duration_s_ = std::ranges::fold_left(
+    targets_ | std::views::transform(&TimedTarget::duration_s), 0.0, std::plus<>{});
 }
 
 double TargetsGenerator::step(double time_s)

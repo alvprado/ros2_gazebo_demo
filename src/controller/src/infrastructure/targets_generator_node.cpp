@@ -1,8 +1,7 @@
 #include "controller/infrastructure/targets_generator_node.hpp"
 
-#include <algorithm>
 #include <chrono>
-#include <iterator>
+#include <ranges>
 
 namespace controller
 {
@@ -45,8 +44,10 @@ TargetsGeneratorNode::TargetsGeneratorNode() : rclcpp::Node("targets_generator")
     }
     std::vector<domain::TimedTarget> targets;
     targets.reserve(values.size());
-    std::transform(values.begin(), values.end(), durations.begin(), std::back_inserter(targets),
-                   [](double v, double d) { return domain::TimedTarget{v, d}; });
+    for (const auto& [v, d] : std::views::zip(values, durations))
+    {
+      targets.push_back({v, d});
+    }
     return targets;
   };
 
