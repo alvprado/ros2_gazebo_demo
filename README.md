@@ -21,77 +21,7 @@ be integrated through an infrastructure adapter, including real hardware.
 
 ## Architecture
 
-```mermaid
----
-config:
-  layout: elk
----
-flowchart LR
-  subgraph C["`**Controller**`"]
-    direction TB
-    TGN["`**TargetsGeneratorNode**
-Sends stepwise constant velocity
-and curvature target values`"]
-    CN["`**ControllerNode**
-Receives and filters targets, reads odometry, and sends velocity commands`"]
-    TGN -->|"/target_longitudinal_velocity<br/>/target_curvature"| CN
-  end
-
-  subgraph V["`**Visualization & ROS Middleware**`"]
-    direction TB
-    URDF["URDF"]
-    RSP["`**robot_state_publisher**`"]
-    TF["`**/tf**<br/>ROS transform topic`"]
-    RVIZ["`**RVIZ**`"]
-    URDF --> RSP
-    RSP -->|"/tf_base_link_to_wheels"| TF
-    RSP -->|"/robot_description"| RVIZ
-    TF -->|"/tf"| RVIZ
-  end
-
-  subgraph S["`**Simulation**`"]
-    direction LR
-    D1[/"launch simple<br/>or gazebo sim"/]
-    SN["`**SimulationNode**
-Custom simple (first-order) simulation
-of a wheeled robot`"]
-    RGB["`**ros_gz_bridge**
-Reads commands from ROS and returns
-robot states from Gazebo`"]
-    GS["`**Gazebo Simulation**
-Runs a physics-based robot simulation`"]
-    GZS["`**ros_gz_sim**
-Spawns the robot`"]
-    D2{"launch simple<br/>or gazebo sim"}
-
-    D1 -->|"/cmd_vel"| SN
-    D1 -->|"/cmd_vel"| RGB
-    RGB -.->|"/gz_cmd_vel"| GS
-    GS -.->|"/gz_odom<br/>/gz_joint_states<br/>/gz_tf_odom_to_base_link"| RGB
-    GZS -.->|"/gz_sdf_robot"| GS
-    SN -->|"/odom<br/>/joint_states<br/>/tf_odom_to_base_link"| D2[/"launch simple<br/>or gazebo sim"/]
-    RGB -->|"/odom<br/>/joint_states<br/>/tf_odom_to_base_link"| D2
-  end
-
-  %% Forward edges into Simulation
-  CN -->|"/cmd_vel"| D1
-  RSP -->|"/robot_description"| GZS
-
-  %% Simulation outputs to Controller and Visualization
-  D2 -->|"/odom"| CN
-  D2 -->|"/joint_states"| RSP
-  D2 -->|"/tf_odom_to_base_link"| TF
-
-classDef indigo stroke:#818cf8,fill:#eef2ff;
-classDef blue stroke:#38bdf8,fill:#f0f9ff;
-classDef orange stroke:#fb923c,fill:#fff7ed;
-classDef violet stroke:#a78bfa,fill:#f5f3ff;
-
-class TGN,CN indigo;
-class D1,D2 violet;
-class SN,RGB,GS,GZS orange;
-class URDF,RSP,TF,RVIZ blue;
-```
+![Architecture](/docs/arch_diagram.svg)
 
 The controller subscribes to `/odom` and publishes to `/cmd_vel`. It has no knowledge
 of which backend is running. Swapping backends requires no changes to the control stack as long as the backend exposes the same `/cmd_vel` and `/odom` interface. A real robot could be integrated through the same interface using an appropriate hardware adapter.
@@ -181,32 +111,8 @@ where $x$, $y$ and $\theta$ are the robot's planar pose, $v$ and $\omega$ the li
 
 The control stack consists of two feedback loops for longitudinal and angular velocity:
 
-```mermaid
----
-config:
-  layout: elk
----
-flowchart LR
+![Control](/docs/control_diagram.svg)
 
-  TV["`**target velocity**`"] --> PID_V["`**PID with Feedforward**`"] --> LX["`**linear velocity**`"] --> CMD["`**/cmd_vel**
-Twist`"]
-
-  TC["`**target curvature**`"] --> KAPPA["`**κ · v = ω_setpoint**`"] --> PID_W["`**PID with Feedforward**`"] --> AZ["`**angular velocity**`"] --> CMD
-
-  ODOM["`**/odom**<br/>current v and ω`"] --> KAPPA
-  ODOM --> PID_V
-  ODOM --> PID_W
-
-  classDef input stroke:#818cf8,fill:#eef2ff;
-  classDef process stroke:#fb923c,fill:#fff7ed;
-  classDef output stroke:#38bdf8,fill:#f0f9ff;
-  classDef feedback stroke:#a78bfa,fill:#f5f3ff;
-
-  class TV,TC input;
-  class PID_V,KAPPA,PID_W process;
-  class LX,AZ,CMD output;
-  class ODOM feedback;
-```
 
 **Longitudinal loop:** a PID with feedforward tracks the target linear velocity directly.
 
