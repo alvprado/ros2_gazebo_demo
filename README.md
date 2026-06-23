@@ -88,7 +88,7 @@ The two backends use the URDF differently. The Gazebo backend reads it directly 
 
 The simple simulator uses the following robot dynamics model:
 
-$$ \dot{\bf{x}} = \bold{f}(\bold{x},\bold{u}) = \begin{bmatrix} \dot{x} \\
+$$ \dot{\mathbf{x}} = \mathbf{f}(\mathbf{x},\mathbf{u}) = \begin{bmatrix} \dot{x} \\
 \dot{y} \\
 \dot{\theta} \\
 \dot{v} \\
