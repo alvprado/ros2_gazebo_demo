@@ -8,9 +8,9 @@ Visualization Manager:
     - Class: rviz_default_plugins/Grid
       Name: Grid
       Enabled: true
-      Cell Size: 0.5
+      Cell Size: 1.0
       Color: 160; 160; 164
-      Plane Cell Count: 20
+      Plane Cell Count: 100
       Reference Frame: <Fixed Frame>
 
     - Class: rviz_default_plugins/RobotModel
@@ -23,7 +23,7 @@ Visualization Manager:
 
     - Class: rviz_default_plugins/TF
       Name: TF
-      Enabled: true
+      Enabled: false
       Show Axes: true
       Show Arrows: true
       Show Names: true
