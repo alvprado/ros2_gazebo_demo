@@ -27,7 +27,7 @@ A few demo videos showing the robot tracking different target profiles in the Ga
 
 https://github.com/user-attachments/assets/0d4fce96-4d34-44f5-b913-d3e1f35bc891
 
-### Constant Curvature - Transient Velocity
+### Constant Curvature - Squarewave Velocity
 
 https://github.com/user-attachments/assets/ea074090-bb77-4b67-b9cd-c881f457e4d0
 
