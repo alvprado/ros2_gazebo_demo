@@ -10,7 +10,7 @@ Visualization Manager:
       Enabled: true
       Cell Size: 1.0
       Color: 160; 160; 164
-      Plane Cell Count: 100
+      Plane Cell Count: 1000
       Reference Frame: <Fixed Frame>
 
     - Class: rviz_default_plugins/RobotModel
