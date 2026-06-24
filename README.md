@@ -124,6 +124,20 @@ Both PIDs use configurable first-order IIR filters on the setpoint and derivativ
 to reduce noise sensitivity.
 
 
+## Software Requirements
+
+| Requirement | Version |
+|-------------|---------|
+| Ubuntu | 24.04 (Noble) |
+| ROS 2 | Jazzy Jalisco |
+| Gazebo | Harmonic (gz-sim 8) |
+| `ros_gz_bridge` / `ros_gz_sim` | Jazzy-compatible release |
+| C++ standard | C++23 |
+| Compiler | GCC 13+ or Clang 16+ |
+| CMake | 3.8+ |
+
+ROS 2 Jazzy and Gazebo Harmonic must be installed and sourced before building. The `ros_gz_bridge` and `ros_gz_sim` packages are required for the Gazebo backend.
+
 ## Building
 
 ```bash
