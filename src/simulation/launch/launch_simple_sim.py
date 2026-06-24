@@ -16,7 +16,7 @@ def generate_launch_description():
     simulation_params = os.path.join(
         get_package_share_directory('simulation'), 'config', 'simulation_params.yaml')
 
-    # Process Xacro / URDF string 
+    # Process Xacro / URDF string
     xacro_file = os.path.join(
         get_package_share_directory('robot_description'), 'urdf', 'robot.urdf.xacro')
     robot_description = xacro.process_file(xacro_file).toxml()

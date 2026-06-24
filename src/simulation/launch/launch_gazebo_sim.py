@@ -23,7 +23,7 @@ def generate_launch_description():
         controller_pkg, 'config', 'targets_generator_params.yaml')
     rviz_config = os.path.join(simulation_pkg, 'config', 'demo.rviz')
 
-    # Process Xacro / URDF string 
+    # Process Xacro / URDF string
     robot_description = xacro.process_file(urdf_file).toxml()
 
     # robot_stat_publisher publishes the URDF to /robot_description and broadcast fixed-joint TFs
@@ -61,7 +61,7 @@ def generate_launch_description():
     )
 
     # ROS - Gazebo bridge
-    # ROS -> Gazebo: /cmd_vel 
+    # ROS -> Gazebo: /cmd_vel
     # Gazebo -> ROS: /odom, /joint_states, /tf
     ros_gz_bridge = Node(
         package='ros_gz_bridge',
