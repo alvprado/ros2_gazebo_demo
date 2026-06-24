@@ -19,6 +19,23 @@ be integrated through an infrastructure adapter, including real hardware.
 - Unit-testable core logic without launching ROS, Gazebo, or RViz.
 - RViz visualization using URDF, joint states, and TF.
 
+## Demo
+
+A few demo videos showing the robot tracking different target profiles in the Gazebo simulation.
+
+### Squarewave Curvature - Constant Velocity 
+
+https://github.com/user-attachments/assets/0d4fce96-4d34-44f5-b913-d3e1f35bc891
+
+### Constant Curvature - Transient Velocity
+
+https://github.com/user-attachments/assets/ea074090-bb77-4b67-b9cd-c881f457e4d0
+
+### Move forward, stop and spin in place
+
+https://github.com/user-attachments/assets/0dc5b00d-ce59-4311-8138-eab4a6de4fd6
+
+
 ## Architecture
 
 ![Architecture](/docs/architectural_diagram.svg)
