@@ -80,11 +80,11 @@ The simple simulation backend plus the launch files for both backends.
 
 | Component | Description |
 |-----------|-------------|
-| `RobotModel` | Robot is modeled as a simple first-order system on both longitudinal and angular velocities. It receives a linear and angular velocity command and translates them into a planar velocity and pose plus wheel angles. The integration scheme is a pluggable/interchangable function object. |
-| `forwardEulerStep<State, Command, Derivative>` | Generic forward euler integration scheme that takes any state and command types together with a callabale that computes the state derivative $f(x,u)$ and a time step, as long as the basic arithmetic operations for states and state derivatives are supported.|
+| `RobotModel` | Robot is modeled as a simple first-order system on both longitudinal and angular velocities. It receives a linear and angular velocity command and translates them into a planar velocity and pose plus wheel angles. The integration scheme is a pluggable and interchangeable function object. |
+| `forwardEulerStep<State, Command, Derivative>` | Generic Forward Euler integration scheme that takes any state and command types together with a callable that computes the state derivative $f(x,u)$ and a time step, as long as the basic arithmetic operations for states and state derivatives are supported.|
 
 **Infrastructure:**
-
+fcallabalef
 | Node | Subscribes | Publishes |
 |------|-----------|-----------|
 | `SimulatorNode` | `/cmd_vel` | `/odom`, `/joint_states`, `/tf` (odom → base\_link) |
