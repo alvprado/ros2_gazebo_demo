@@ -133,9 +133,7 @@ The control stack consists of two feedback loops for longitudinal and angular ve
 
 **Longitudinal loop:** a PID with feedforward tracks the target linear velocity directly.
 
-**Angular loop:** the `CurvatureController` converts the target curvature $\kappa$ to a
-target angular velocity $\omega = \kappa v$ using the current linear velocity. This formulation expresses the desired turn as a geometric curvature rather than as a fixed angular velocity, so the commanded angular velocity scales with the robot’s current speed. A separate PID then closes the loop on angular
-velocity.
+**Angular loop:** the `CurvatureController` converts the target curvature $\kappa$ to a target angular velocity $\omega = \kappa v$ using the current linear velocity. This formulation expresses the desired turn as a geometric curvature rather than as a fixed angular velocity, so the commanded angular velocity scales with the robot’s current speed. A separate PID then closes the loop on angular velocity.
 
 Both PIDs use configurable first-order IIR filters on the setpoint and derivative term
 to reduce noise sensitivity.
@@ -178,7 +176,7 @@ colcon test-result --all
 ros2 launch simulation launch_simple_sim.py
 ```
 
-Starts the first-order lag simulator, both controller nodes, and RViz.
+Starts the custom simulator, both controller nodes, and RViz.
 
 ### Gazebo backend (physics-based simulation)
 
@@ -187,8 +185,7 @@ ros2 launch simulation launch_gazebo_sim.py
 ```
 
 Starts gz-sim headless, spawns the robot, brings up the ROS–Gazebo bridge,
-and launches the controller nodes (delayed 6 s to allow the robot to settle
-on the ground before receiving velocity commands).
+and launches the controller nodes.
 
 ## Design Decisions
 

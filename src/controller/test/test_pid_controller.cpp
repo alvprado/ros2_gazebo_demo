@@ -19,8 +19,6 @@ static TestPid make_pid(const PidConfig& config, double cutoff_hz = 100.0)
   return TestPid(config, LowPassFilter(cutoff_hz), LowPassFilter(cutoff_hz));
 }
 
-// ── LowPassFilter ─────────────────────────────────────────────────────────────
-
 TEST(LowPassFilterTest, FirstCallSeedsFromInput)
 {
   LowPassFilter f(1.0);
@@ -60,8 +58,6 @@ TEST(LowPassFilterTest, ReturnsErrorOnNonPositiveCutoff)
   EXPECT_EQ(result.error(), LowPassFilterErrorCodes::NonPositiveFrequency);
 }
 
-// ── PidController — error codes ───────────────────────────────────────────────
-
 TEST(PidControllerTest, ReturnsErrorOnNegativeGain)
 {
   PidConfig config;
@@ -90,8 +86,6 @@ TEST(PidControllerTest, ReturnsErrorOnNonPositiveTimeStep)
   ASSERT_FALSE(result.has_value());
   EXPECT_EQ(result.error(), PidErrorCodes::InvalidTimeStep);
 }
-
-// ── PidController — basic control law ────────────────────────────────────────
 
 TEST(PidControllerTest, ZeroErrorProducesZeroOutput)
 {
@@ -126,20 +120,17 @@ TEST(PidControllerTest, OutputClampedToLimits)
   EXPECT_DOUBLE_EQ(*result, 1.0);
 }
 
-// ── PidController — feedforward ───────────────────────────────────────────────
-
 TEST(PidControllerTest, FeedforwardAddsSetpointScaled)
 {
   PidConfig config;
   config.kff = 1.0;
   auto pid = make_pid(config);
-  // error = 0 → P=I=D=0; feedforward = kff * setpoint = 0.5
+
+  // error = 0 -> P=I=D=0; feedforward = kff * setpoint = 0.5
   auto result = pid.step(0.5, 0.5, 0.1);
   ASSERT_TRUE(result.has_value());
   EXPECT_NEAR(*result, 0.5, 1e-9);
 }
-
-// ── PidController — anti-windup ───────────────────────────────────────────────
 
 TEST(PidControllerTest, IntegralFreezesDuringSaturation)
 {

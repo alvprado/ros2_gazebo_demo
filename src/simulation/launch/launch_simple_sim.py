@@ -7,6 +7,8 @@ import xacro
 
 
 def generate_launch_description():
+
+    # Resolve file paths and get params
     controller_params = os.path.join(
         get_package_share_directory('controller'), 'config', 'controller_params.yaml')
     targets_generator_params = os.path.join(
@@ -14,13 +16,17 @@ def generate_launch_description():
     simulation_params = os.path.join(
         get_package_share_directory('simulation'), 'config', 'simulation_params.yaml')
 
+    # Process Xacro / URDF string 
     xacro_file = os.path.join(
         get_package_share_directory('robot_description'), 'urdf', 'robot.urdf.xacro')
     robot_description = xacro.process_file(xacro_file).toxml()
 
+    # Setup rviz
     rviz_config = os.path.join(
         get_package_share_directory('simulation'), 'config', 'demo.rviz')
 
+    # robot_stat_publisher publishes the URDF to /robot_description and broadcast fixed-joint TFs
+    # Wheel TFs come from /joint_states published the simulation node
     robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
@@ -29,6 +35,7 @@ def generate_launch_description():
         output='screen',
     )
 
+    # Run targets generator
     targets_generator = Node(
         package='controller',
         executable='targets_generator',
@@ -37,6 +44,7 @@ def generate_launch_description():
         output='screen',
     )
 
+    # Run controller
     controller = Node(
         package='controller',
         executable='controller',
@@ -45,6 +53,7 @@ def generate_launch_description():
         output='screen',
     )
 
+    # Run simulation
     simple_simulation = Node(
         package='simulation',
         executable='simple_simulation',
@@ -53,6 +62,8 @@ def generate_launch_description():
         output='screen',
     )
 
+    # Run RVIZ
+    # LIBGL_ALWAYS_SOFTWARE for rendering issues with local hardware
     rviz = Node(
         package='rviz2',
         executable='rviz2',

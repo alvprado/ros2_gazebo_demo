@@ -5,12 +5,12 @@
 #include "simulation/domain/integrators.hpp"
 #include "simulation/domain/robot_model.hpp"
 
+using simulation::domain::forwardEulerStep;
 using simulation::domain::RobotModel;
 using simulation::domain::RobotModelConfig;
 using simulation::domain::SimulationErrorCodes;
 using simulation::domain::State;
 using simulation::domain::Velocity2D;
-using simulation::domain::forwardEulerStep;
 
 // Default tau=1.0 so that with dt=1.0, Euler gives exactly: v_new = v_cmd in one step.
 static RobotModel make_model(double long_tc = 1.0, double ang_tc = 1.0)
@@ -19,9 +19,8 @@ static RobotModel make_model(double long_tc = 1.0, double ang_tc = 1.0)
   cfg.long_velocity_time_constant_s = long_tc;
   cfg.angular_velocity_time_constant_s = ang_tc;
   return RobotModel([](const State& state, const Velocity2D& velocity_cmd,
-                       const RobotModel::DerivativeFunction& derivative_fn, double dt_s) {
-                      return forwardEulerStep(state, velocity_cmd, derivative_fn, dt_s);
-                    },
+                       const RobotModel::DerivativeFunction& derivative_fn, double dt_s)
+                    { return forwardEulerStep(state, velocity_cmd, derivative_fn, dt_s); },
                     cfg);
 }
 
@@ -54,7 +53,7 @@ TEST(RobotModelTest, AngularVelocityReachesCommandWhenTauEqualsTimeStep)
 
 TEST(RobotModelTest, AngularLagSlowsResponse)
 {
-  // tau_ang=1 > dt=0.1 → first step output < command
+  // tau_ang=1 > dt=0.1 -> first step output < command
   auto model = make_model(1.0, 1.0);
   const auto state = model.step(Velocity2D{0.0, 1.0}, 0.1);
   ASSERT_TRUE(state.has_value());
@@ -66,8 +65,8 @@ TEST(RobotModelTest, AngularLagSlowsResponse)
 TEST(RobotModelTest, ForwardMotionIntegratesX)
 {
   auto model = make_model();
-  model.step(Velocity2D{1.0, 0.0}, 1.0);                       // v → 1.0, pose unchanged
-  const auto state = model.step(Velocity2D{1.0, 0.0}, 1.0);   // x += v_prev * dt = 1.0
+  model.step(Velocity2D{1.0, 0.0}, 1.0);                     // v → 1.0, pose unchanged
+  const auto state = model.step(Velocity2D{1.0, 0.0}, 1.0);  // x += v_prev * dt = 1.0
   ASSERT_TRUE(state.has_value());
   EXPECT_NEAR(state.value().pose.x_m, 1.0, 1e-9);
   EXPECT_NEAR(state.value().pose.y_m, 0.0, 1e-9);
@@ -76,8 +75,8 @@ TEST(RobotModelTest, ForwardMotionIntegratesX)
 TEST(RobotModelTest, PureTurnIntegratesTheta)
 {
   auto model = make_model();
-  model.step(Velocity2D{0.0, 1.0}, 1.0);                       // omega → 1.0, theta unchanged
-  const auto state = model.step(Velocity2D{0.0, 1.0}, 1.0);   // theta += omega_prev * dt = 1.0
+  model.step(Velocity2D{0.0, 1.0}, 1.0);                     // omega → 1.0, theta unchanged
+  const auto state = model.step(Velocity2D{0.0, 1.0}, 1.0);  // theta += omega_prev * dt = 1.0
   ASSERT_TRUE(state.has_value());
   EXPECT_NEAR(state.value().pose.theta_rad, 1.0, 1e-9);
   EXPECT_NEAR(state.value().pose.x_m, 0.0, 1e-9);
@@ -86,15 +85,15 @@ TEST(RobotModelTest, PureTurnIntegratesTheta)
 
 TEST(RobotModelTest, ForwardMotionAfterTurnIntegratesY)
 {
-  // 4 steps: accelerate angular, stop angular (theta reaches π/2), accelerate linear, drive
+  // 4 steps: accelerate angular, stop angular (theta reaches pi/2), accelerate linear, drive
   auto model = make_model();
-  model.step(Velocity2D{0.0, M_PI / 2.0}, 1.0);  // omega → π/2, theta=0 (uses omega_prev=0)
-  model.step(Velocity2D{0.0, 0.0}, 1.0);           // omega → 0, theta → π/2 (uses omega_prev=π/2)
-  model.step(Velocity2D{1.0, 0.0}, 1.0);           // v → 1.0, theta=π/2, pose unchanged (v_prev=0)
-  const auto state = model.step(Velocity2D{1.0, 0.0}, 1.0);  // y += v_prev*sin(π/2)*dt = 1.0
+  model.step(Velocity2D{0.0, M_PI / 2.0}, 1.0);  // omega -> pi/2, theta=0 (uses omega_prev=0)
+  model.step(Velocity2D{0.0, 0.0}, 1.0);         // omega -> 0, theta -> pi/2 (uses omega_prev=pi/2)
+  model.step(Velocity2D{1.0, 0.0}, 1.0);         // v -> 1.0, theta=pi/2, pose unchanged (v_prev=0)
+  const auto state = model.step(Velocity2D{1.0, 0.0}, 1.0);  // y += v_prev*sin(pi/2)*dt = 1.0
   ASSERT_TRUE(state.has_value());
   EXPECT_NEAR(state.value().pose.y_m, 1.0, 1e-9);
-  EXPECT_NEAR(state.value().pose.x_m, 0.0, 1e-6);  // cos(π/2) ≈ 0
+  EXPECT_NEAR(state.value().pose.x_m, 0.0, 1e-6);  // cos(pi/2) -> 0
 }
 
 TEST(RobotModelTest, NonPositiveTimeConstantReturnsError)
@@ -125,8 +124,8 @@ TEST(RobotModelTest, NegativeDtReturnsError)
 TEST(RobotModelTest, ForwardMotionSpinsWheelsSymmetrically)
 {
   auto model = make_model();
-  model.step(Velocity2D{1.0, 0.0}, 1.0);                       // v → 1.0, wheels unchanged
-  const auto state = model.step(Velocity2D{1.0, 0.0}, 1.0);   // both wheels spin forward
+  model.step(Velocity2D{1.0, 0.0}, 1.0);                     // v -> 1.0, wheels unchanged
+  const auto state = model.step(Velocity2D{1.0, 0.0}, 1.0);  // both wheels spin forward
   ASSERT_TRUE(state.has_value());
   EXPECT_NEAR(state.value().wheel_angles.left_rad, state.value().wheel_angles.right_rad, 1e-9);
   EXPECT_GT(state.value().wheel_angles.left_rad, 0.0);
@@ -135,8 +134,8 @@ TEST(RobotModelTest, ForwardMotionSpinsWheelsSymmetrically)
 TEST(RobotModelTest, PureTurnSpinsWheelsOppositely)
 {
   auto model = make_model();
-  model.step(Velocity2D{0.0, 1.0}, 1.0);                       // omega → 1.0, wheels unchanged
-  const auto state = model.step(Velocity2D{0.0, 1.0}, 1.0);   // left backward, right forward
+  model.step(Velocity2D{0.0, 1.0}, 1.0);                     // omega -> 1.0, wheels unchanged
+  const auto state = model.step(Velocity2D{0.0, 1.0}, 1.0);  // left backward, right forward
   ASSERT_TRUE(state.has_value());
   EXPECT_LT(state.value().wheel_angles.left_rad, 0.0);
   EXPECT_GT(state.value().wheel_angles.right_rad, 0.0);
@@ -149,9 +148,8 @@ TEST(RobotModelTest, InvalidWheelConfigReturnsError)
   cfg.angular_velocity_time_constant_s = 1.0;
   cfg.wheel_radius_m = 0.0;  // invalid
   RobotModel model([](const State& state, const Velocity2D& velocity_cmd,
-                      const RobotModel::DerivativeFunction& derivative_fn, double dt_s) {
-                     return forwardEulerStep(state, velocity_cmd, derivative_fn, dt_s);
-                   },
+                      const RobotModel::DerivativeFunction& derivative_fn, double dt_s)
+                   { return forwardEulerStep(state, velocity_cmd, derivative_fn, dt_s); },
                    cfg);
   const auto result = model.step(Velocity2D{1.0, 0.0}, 0.1);
   ASSERT_FALSE(result.has_value());

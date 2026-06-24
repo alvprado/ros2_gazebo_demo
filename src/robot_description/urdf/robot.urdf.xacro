@@ -1,23 +1,20 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="demo_robot">
 
-  <!-- ── Robot dimensions ─────────────────────────────────────────────── -->
+  <!-- Robot dimensions -->
   <xacro:property name="base_length"     value="0.30"/>
   <xacro:property name="base_width"      value="0.20"/>
   <xacro:property name="base_height"     value="0.10"/>
   <xacro:property name="wheel_radius"    value="0.05"/>
   <xacro:property name="wheel_width"     value="0.03"/>
-  <!-- Distance between the two driven wheels (centre to centre) -->
+  <!-- Distance between the two driven wheels - track width -->
   <xacro:property name="wheel_separation" value="0.30"/>
   <!-- Caster sphere radius — equal to wheel_radius so joint z needs no offset -->
   <xacro:property name="caster_radius"   value="0.05"/>
 
-  <!-- ── base_link ────────────────────────────────────────────────────── -->
-  <!--
-    The root link of the robot.  All other links are children of this one.
-    Visual   = what RViz / Gazebo renders.
-    Collision = simplified shape the physics engine uses for contact.
-    Inertial  = mass + inertia tensor — Gazebo needs this to simulate dynamics.
+  <!-- base_link -->
+  <!-- The root link of the robot defining all other children links, 
+       visualization, collision and inertia properties
   -->
   <link name="base_link">
     <visual>
@@ -49,11 +46,7 @@
     </inertial>
   </link>
 
-  <!-- ── Wheel macro ──────────────────────────────────────────────────── -->
-  <!--
-    Reusable macro so we define left and right wheels identically except
-    for the Y offset (positive = left, negative = right) and the joint name.
-  -->
+  <!-- Wheel macro -->
   <xacro:macro name="wheel" params="prefix y_offset">
 
     <link name="${prefix}_wheel">
@@ -108,10 +101,10 @@
   <xacro:wheel prefix="left"  y_offset=" ${wheel_separation/2}"/>
   <xacro:wheel prefix="right" y_offset="-${wheel_separation/2}"/>
 
-  <!-- ── Caster wheel ─────────────────────────────────────────────────── -->
+  <!--s Caster wheel -->
   <!--
-    A passive (non-driven) support at the front.  Fixed joint = no rotation
-    in URDF; Gazebo simulates it as a frictionless sphere so it pivots freely.
+    A passive (non-driven) support at the front without rotation in URDF
+    Gazebo simulates it as a frictionless sphere so it pivots freely.
   -->
   <link name="caster_wheel">
     <visual>
@@ -151,12 +144,7 @@
     <origin xyz="${base_length/2 - caster_radius} 0 ${-base_height/2}" rpy="0 0 0"/>
   </joint>
 
-  <!-- ── Gazebo extensions ─────────────────────────────────────────────── -->
-  <!--
-    Everything inside <gazebo> is ignored by ROS tools (robot_state_publisher,
-    RViz) and is only used when Gazebo converts this URDF to its native SDF.
-  -->
-
+  <!-- Gazebo extensions -->
   <!-- Make the caster frictionless so it pivots without fighting the drive wheels -->
   <gazebo reference="caster_wheel">
     <mu1>0.0</mu1>
