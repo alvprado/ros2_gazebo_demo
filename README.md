@@ -1,7 +1,7 @@
 # ROS 2 Modular Robot Simulation Demo
 
 A modular closed-loop control and simulation stack for a differential-drive robot,
-built with ROS 2, Gazebo Harmonic, and modern C++.
+built with ROS 2 Jazzy, Gazebo Harmonic, and modern C++.
 
 The project demonstrates a backend-agnostic controller architecture: the same control
 stack runs unchanged against either a custom lightweight simulator or a Gazebo-based
@@ -15,13 +15,13 @@ be integrated through an infrastructure adapter, including real hardware.
 - Same controller interface for both backends: `/odom` in, `/cmd_vel` out.
 - Curvature-based steering: target curvature is converted into an angular velocity setpoint
 - ROS-independent domain logic for the controller, simulator, filters, target generation, and integrators.
-- Modern C++ design using `std::expected`, C++20 concepts, templates, and dependency injection.
+- Modern C++ design using `std::expected` and `std::optional` for error handling, C++20 concepts, templates, and dependency injection.
 - Unit-testable core logic without launching ROS, Gazebo, or RViz.
 - RViz visualization using URDF, joint states, and TF.
 
 ## Architecture
 
-![Architecture](/docs/arch_diagram.svg)
+![Architecture](/docs/architectural_diagram.svg)
 
 The controller subscribes to `/odom` and publishes to `/cmd_vel`. It has no knowledge
 of which backend is running. Swapping backends requires no changes to the control stack as long as the backend exposes the same `/cmd_vel` and `/odom` interface. A real robot could be integrated through the same interface using an appropriate hardware adapter.
@@ -37,8 +37,8 @@ The robot control stack. Fully split into domain and infrastructure layers.
 | Component | Description |
 |-----------|-------------|
 | `TargetsGenerator` | Step-profile generator. Takes a list of `(value, duration_s)` pairs and returns the current target at any query time. Supports looping. Used for both longitudinal velocity and curvature targets. |
-| `PidController<SetpointFilter, DerivativeFilter>` | Generic PID with feedforward. Setpoint and derivative filters are dependencies injected via templates, constrained by C++20 concepts, making the filter type a compile-time policy. Output is clamped to configurable limits. Returns `std::expected<double, PidErrorCodes>`. |
-| `CurvatureController<ControlLaw>` | Converts a target curvature and current longitudinal velocity into an angular velocity command using the relation $w = \kappa v $. Falls back to a configurable spin-in-place or straight line mode when the robot is nearly stopped to avoid division-by-near-zero. The underlying control law is a dependency injected via templates and validated by C++20 concepts. Returns `std::expected<double, CurvatureControllerErrorCodes>`.|
+| `PidController<SetpointFilter, DerivativeFilter>` | Generic PID with feedforward, filtering and anti-windup. Setpoint and derivative filters are dependencies injected via templates, constrained by C++20 concepts. Output is clamped to configurable limits. |
+| `CurvatureController<ControlLaw>` | Converts a target curvature and current longitudinal velocity into an angular velocity command using the relation $w = \kappa v $. Falls back to a configurable spin-in-place or standstill mode when the robot is nearly stopped to avoid singularities. The underlying control law is a dependency injected via templates and validated by C++20 concepts.|
 | `LowPassFilter` | First-order IIR filter. Used to smooth the PID setpoint and derivative term. |
 
 **Infrastructure:**
@@ -52,8 +52,8 @@ The robot control stack. Fully split into domain and infrastructure layers.
 
 | File | Contents |
 |------|----------|
-| `config/controller_params.yaml` | PID gains, setpoint and derivative filter cutoff frequencies, output limits, lower velocity threshold value for spin-in-place mode; also `control_frequency`. |
-| `config/targets_generator_params.yaml` | Target velocity and curvature sequences as parallel `values[]` / `durations_s[]` arrays, `targets_update_frequency_hz`, and `loop` flag. |
+| `config/controller_params.yaml` | PID gains, setpoint and derivative filter cutoff frequencies, output limits, lower velocity threshold value for spin-in-place mode and the controller update frequency. |
+| `config/targets_generator_params.yaml` | Target velocity and curvature sequences as parallel `values[]` / `durations_s[]` arrays, targets update frequency and `loop` flag. |
 
 ### `simulation`
 
@@ -63,8 +63,8 @@ The simple simulation backend plus the launch files for both backends.
 
 | Component | Description |
 |-----------|-------------|
-| `RobotModel` | Robot is modeled as a simple first-order system on both longitudinal and angular velocity. It receives a linear and angular velocity command and translates them into a 2D velocity and pose plus wheel angle states. The integration scheme is a pluggable function object, allowing Forward Euler, Heun, or Runge-Kutta to be substituted without changing the model. Returns `std::expected<State, SimulationErrorCodes>`. |
-| `forwardEulerStep<State, Command, Derivative>` | Templated integrator constrained by the `NumericIntegrable` concept. It takes the current state, the given command, a callable to the model dynamics (`f(x,u)`) and a time step to compute the next state.|
+| `RobotModel` | Robot is modeled as a simple first-order system on both longitudinal and angular velocities. It receives a linear and angular velocity command and translates them into a planar velocity and pose plus wheel angles. The integration scheme is a pluggable/interchangable function object. |
+| `forwardEulerStep<State, Command, Derivative>` | Generic forward euler integration scheme that takes any state and command types together with a callabale that computes the state derivative $f(x,u)$ and a time step, as long as the basic arithmetic operations for states and state derivatives are supported.|
 
 **Infrastructure:**
 
@@ -76,7 +76,7 @@ The simple simulation backend plus the launch files for both backends.
 
 | File | Contents |
 |------|----------|
-| `config/simulation_params.yaml` | First-order lag time constants for longitudinal and angular velocity, wheel radius and separation, and `simulation_frequency`. |
+| `config/simulation_params.yaml` | First-order lag time constants for longitudinal and angular velocity, wheel radius and separation, and the simulator update frequency. |
 
 ### `robot_description`
 
@@ -105,7 +105,7 @@ v \sin(\theta) \\
 \end{bmatrix}
 $$
 
-where $x$, $y$ and $\theta$ are the robot's planar pose, $v$ and $\omega$ the linear and angular velocity and $\phi_{\text{left}}, \phi_{\text{right}}$ the left and right wheel angles. The commands -- instead of low-level actuator torques -- are given in high-level linear and angular velocity commands $v_{\text{cmd}}$ and $\omega_{\text{cmd}}$. The linear and angular velocity states are hence modeled as first-order systems w.r.t. their corresponding commands and with the time constants $T_{\text{long}}$ and $T_{\text{angular}}$. $L$ is the wheel separation and $R$ describes the wheel radius.
+where $x$, $y$ and $\theta$ are the robot's planar pose, $v$ and $\omega$ the linear and angular velocity and $\phi_{\text{left}}, \phi_{\text{right}}$ the left and right wheel angles. The commands -- instead of low-level actuator torques -- are given in high-level linear and angular velocity commands $v_{\text{cmd}}$ and $\omega_{\text{cmd}}$. The linear and angular velocity states are hence modeled as first-order systems w.r.t. their corresponding commands, with the time constants $T_{\text{long}}$ and $T_{\text{angular}}$. $L$ is the wheel separation and $R$ is the wheel radius.
 
 ## Controller Design
 
