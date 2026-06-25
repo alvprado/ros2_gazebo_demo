@@ -38,7 +38,7 @@ https://github.com/user-attachments/assets/0dc5b00d-ce59-4311-8138-eab4a6de4fd6
 
 ## Architecture
 
-![Architecture](/docs/architectural_diagram.svg)
+![Architecture](/docs/architecture_diagram.svg)
 
 The controller subscribes to `/odom` and publishes to `/cmd_vel`. It has no knowledge
 of which backend is running. Swapping backends requires no changes to the control stack as long as the backend exposes the same `/cmd_vel` and `/odom` interface. A real robot could be integrated through the same interface using an appropriate hardware adapter.
